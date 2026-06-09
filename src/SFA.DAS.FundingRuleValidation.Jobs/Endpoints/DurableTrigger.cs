@@ -18,4 +18,3 @@ public class FundingRuleHttpEndpoint
         return response;
     }
 }
-
