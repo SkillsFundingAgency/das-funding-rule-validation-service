@@ -1,0 +1,17 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureFunctionsJobHost:Logging:LogLevel:Host": "Information",
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "ConfigurationStorageConnectionString": "UseDevelopmentStorage=true;",
+    "ConfigNames": "SFA.DAS.FundingRuleValidation.Jobs_1.0",
+    "EnvironmentName": "LOCAL",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "Version": "2.0"
+  },
+  "Host": {
+    "LocalHttpPort": 7007,
+    "CORS": "*",
+    "CORSCredentials": false
+  }
+}
