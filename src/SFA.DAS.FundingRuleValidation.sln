@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SFA.DAS.FundingRuleValidation.Jobs", "SFA.DAS.FundingRuleValidation.Jobs.csproj", "{9701DD39-3264-4055-968B-747AED82E6DA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SFA.DAS.FundingRuleValidation.Jobs", "SFA.DAS.FundingRuleValidation.Jobs/SFA.DAS.FundingRuleValidation.Jobs.csproj", "{9701DD39-3264-4055-968B-747AED82E6DA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

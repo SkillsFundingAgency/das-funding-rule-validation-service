@@ -16,6 +16,6 @@ public class FundingRuleHttpEndpoint
         var instanceId = 0;
         var response = req.CreateResponse(HttpStatusCode.Accepted);
         return response;
-    }    
+    }
 }
 
