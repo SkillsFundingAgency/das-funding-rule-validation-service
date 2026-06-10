@@ -9,6 +9,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <InternalsVisibleTo Include="SFA.DAS.FundingRuleValidation.UnitTests" />
+    </ItemGroup>
+
+    <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App"/>
         <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="3.1.2" />
         <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="2.52.0"/>
@@ -27,8 +31,5 @@
     </ItemGroup>
     <ItemGroup>
         <Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext" />
-    </ItemGroup>
-    <ItemGroup>
-      <Folder Include="Activities\" />
     </ItemGroup>
 </Project>
