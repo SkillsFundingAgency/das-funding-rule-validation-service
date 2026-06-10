@@ -4,25 +4,17 @@ namespace SFA.DAS.FundingRuleValidation.Jobs.Data.TableStorage;
 
 public class TableStorageRulesRepository(TableServiceClient tableServiceClient): IRulesRepository
 {
-    public async Task<List<SFA.DAS.FundingRuleValidation.Jobs.Domain.FundingRule>> GetActiveRulesForDate(DateTime date)
+    public async Task<List<Domain.FundingRule>> GetActiveRulesForDate(DateTime date)
     {
         var client = tableServiceClient.GetTableClient("FundingRules");
-        var pages = client.QueryAsync<FundingRule>();
+        var pages = client.QueryAsync<FundingRuleTableEntity>();
 
-        var results = new List<FundingRule>();
+        var results = new List<FundingRuleTableEntity>();
         await foreach (var page in pages.AsPages())
         {
             results.AddRange(page.Values);
         }
         
-        return results.Select(MapToDomain).ToList();
-    }
-
-    private static SFA.DAS.FundingRuleValidation.Jobs.Domain.FundingRule MapToDomain(FundingRule rule)
-    {
-        return new SFA.DAS.FundingRuleValidation.Jobs.Domain.FundingRule
-        {
-            RuleName = rule.RuleName
-        };
+        return results.ToDomain().ToList();
     }
 }
