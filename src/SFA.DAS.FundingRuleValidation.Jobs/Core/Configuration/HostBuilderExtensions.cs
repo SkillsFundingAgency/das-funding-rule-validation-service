@@ -1,9 +1,11 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Azure.Data.Tables;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using SFA.DAS.FundingRuleValidation.Jobs.Data;
+using SFA.DAS.FundingRuleValidation.Jobs.Data.TableStorage;
 
 namespace SFA.DAS.FundingRuleValidation.Jobs.Core.Configuration;
 
@@ -40,6 +42,12 @@ public static class HostBuilderExtensions
         private FunctionsApplicationBuilder RegisterServices()
         {
             builder.Services.AddOpenTelemetryRegistration(builder.Configuration.GetValue<string>("APPLICATIONINSIGHTS_CONNECTION_STRING"));
+            builder.Services.AddTransient(cfg =>
+            {
+                var config = cfg.GetService<IOptions<ConnectionStringsConfiguration>>()?.Value;
+                return new TableServiceClient(config?.TableStorageConnectionString);
+            });
+            
             return builder;
         }
 

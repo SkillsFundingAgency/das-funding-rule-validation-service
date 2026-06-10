@@ -1,6 +1,6 @@
 ﻿using SFA.DAS.FundingRuleValidation.Jobs.Domain;
 
-namespace SFA.DAS.FundingRuleValidation.Jobs.Data;
+namespace SFA.DAS.FundingRuleValidation.Jobs.Data.Sql;
 
 public class SqlRulesRepository: IRulesRepository
 {

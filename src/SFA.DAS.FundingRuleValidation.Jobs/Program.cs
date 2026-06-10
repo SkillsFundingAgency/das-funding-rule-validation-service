@@ -6,4 +6,5 @@ FunctionsApplication
     .CreateBuilder(args)
     .ConfigureFundingRuleValidationApp()
     .Build()
+    .InitialiseStorage()
     .Run();
