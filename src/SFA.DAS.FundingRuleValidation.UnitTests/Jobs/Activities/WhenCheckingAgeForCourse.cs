@@ -1,0 +1,19 @@
+﻿using SFA.DAS.FundingRuleValidation.Jobs.Activities;
+using SFA.DAS.FundingRuleValidation.Jobs.Domain;
+
+namespace SFA.DAS.FundingRuleValidation.UnitTests.Jobs.Activities;
+
+public class WhenCheckingAgeForCourse
+{
+    [Test, MoqAutoData]
+    public async Task Then_An_Empty_Rule_Outcome_Is_Returned(
+        LearnerData learnerData,
+        [Greedy] CourseAgeCheckActivity sut)
+    {
+        // act
+        var result = await sut.CourseAgeCheck(learnerData, null!);
+        
+        // assert
+        result.Should().BeEquivalentTo(new RuleOutcome(string.Empty, string.Empty));
+    }
+}
