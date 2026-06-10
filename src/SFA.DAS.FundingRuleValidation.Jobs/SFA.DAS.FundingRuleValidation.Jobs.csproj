@@ -24,7 +24,6 @@
         <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="2.1.0"/>
         <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="2.0.7"/>
         <PackageReference Include="SFA.DAS.Configuration.AzureTableStorage" Version="17.1.165" />
-        <PackageReference Include="System.Net.Http.Json" Version="10.0.9" />
     </ItemGroup>
     <ItemGroup>
         <Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext" />
