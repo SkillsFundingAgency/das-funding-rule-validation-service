@@ -24,7 +24,7 @@ public class FundingRuleHttpEndpoint
             return req.CreateResponse(HttpStatusCode.BadRequest);
         }
         
-        var instanceId = await client.ScheduleNewOrchestrationInstanceAsync(nameof(FundingRuleOrchestrators.FundingRuleOrchestrator), new LearnerData(learnerId, ilr));
+        var instanceId = await client.ScheduleNewOrchestrationInstanceAsync(nameof(FundingRuleOrchestrator.ApplyFundingRules), new LearnerData(learnerId, ilr));
         logger.LogInformation("{instanceId}: Started orchestration for learner '{learnerId}'.", instanceId, learnerId);
         return await client.CreateCheckStatusResponseAsync(req, instanceId);
     }

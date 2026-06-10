@@ -1,26 +1,26 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.DurableTask;
 using Microsoft.Extensions.Logging;
-using SFA.DAS.FundingRuleValidation.Jobs.Data;
+using SFA.DAS.FundingRuleValidation.Jobs.Activities;
 using SFA.DAS.FundingRuleValidation.Jobs.Domain;
 
 namespace SFA.DAS.FundingRuleValidation.Jobs.Orchestrators;
 
-public class FundingRuleOrchestrators(IRulesRepository rulesRepository)
+public class FundingRuleOrchestrator
 {
-    [Function(nameof(FundingRuleOrchestrator))]
-    public async Task<List<RuleOutcome>> FundingRuleOrchestrator([OrchestrationTrigger] TaskOrchestrationContext context)
+    [Function(nameof(ApplyFundingRules))]
+    public async Task<List<RuleOutcome>> ApplyFundingRules([OrchestrationTrigger] TaskOrchestrationContext context)
     {
-        ILogger logger = context.CreateReplaySafeLogger(nameof(FundingRuleOrchestrator));
+        ILogger logger = context.CreateReplaySafeLogger(nameof(ApplyFundingRules));
         
-        var outputs = new List<RuleOutcome>();
-        var rules = await rulesRepository.GetAll();
+        var rules = await context.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDateActivity.GetActiveRulesForDate), context.CurrentUtcDateTime);
         if (rules is { Count: 0 })
         {
             logger.LogInformation("{InstanceId}: No rules found", context.InstanceId);
-            return outputs;
+            return [];
         }
 
+        var outputs = new List<RuleOutcome>();
         var learnerData = context.GetInput<LearnerData>()!;
         
         // Note: simplest thing possible, probably not how it should actually work
