@@ -24,6 +24,7 @@ public class WhenOrchestratingFundingRulesValidation
     
     [Test, MoqAutoData]
     public async Task Then_Rule_Outcomes_For_Each_Rule_Are_Returned(
+        IndividualisedLearnerRecord ilr,
         List<FundingRule> rules,
         Mock<TaskOrchestrationContext> context)
     {
@@ -34,7 +35,7 @@ public class WhenOrchestratingFundingRulesValidation
 
         context
             .Setup(x => x.GetInput<LearnerData>())
-            .Returns(new LearnerData(Guid.NewGuid(), new IndividualisedLearnerRecord()));
+            .Returns(new LearnerData(Guid.NewGuid(), ilr));
 
         foreach (var rule in rules)
         {

@@ -78,6 +78,6 @@ public class WhenRunningFundingRuleTrigger
         capturedTaskName.Should().Be(nameof(FundingRuleOrchestrator.ApplyFundingRules));
         capturedLearnerData.Should().NotBeNull();
         capturedLearnerData.Id.Should().Be(learnerId);
-        capturedLearnerData.Record.Should().Be(ilr);
+        capturedLearnerData.Ilr.Should().Be(ilr);
     }
 }
