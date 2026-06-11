@@ -9,7 +9,7 @@ public interface IFundingRulesDataContext
 }
 
 [ExcludeFromCodeCoverage]
-internal class FundingRulesDbContext(DbContextOptions<FundingRulesDbContext> options) : DbContext(options), IFundingRulesDataContext
+public class FundingRulesDbContext(DbContextOptions<FundingRulesDbContext> options) : DbContext(options), IFundingRulesDataContext
 {
     public DbSet<FundingRuleEntity> FundingRules { get; set; }
     

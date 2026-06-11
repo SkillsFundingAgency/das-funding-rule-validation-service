@@ -2,6 +2,6 @@
 
 public class IndividualisedLearnerRecord
 {
-    public required DateTime DateOfBirth { get; set; }
+    public required int AgeAtStartOfCourse { get; set; }
     public required string CourseId { get; set; }
 }
