@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.EntityFrameworkCore;
 
 namespace SFA.DAS.FundingRuleValidation.Jobs.Data.Sql;
 
@@ -7,6 +8,7 @@ public interface IFundingRulesDataContext
     DbSet<FundingRuleEntity> FundingRules { get; }
 }
 
+[ExcludeFromCodeCoverage]
 internal class FundingRulesDbContext(DbContextOptions<FundingRulesDbContext> options) : DbContext(options), IFundingRulesDataContext
 {
     public DbSet<FundingRuleEntity> FundingRules { get; set; }

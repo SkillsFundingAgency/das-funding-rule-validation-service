@@ -18,7 +18,7 @@ public class FundingRuleHttpEndpoint
         [DurableClient] DurableTaskClient client,
         FunctionContext executionContext)
     {
-        var logger = executionContext.GetLogger(nameof(FundingRuleTrigger));
+        var logger = executionContext.GetLogger<FundingRuleHttpEndpoint>();
         if (ilr is null)
         {
             return req.CreateResponse(HttpStatusCode.BadRequest);
