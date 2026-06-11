@@ -16,7 +16,7 @@ public static class HostExtensions
                 return host;
             }
 
-            var client = serviceClient.GetTableClient("FundingRules");
+            var client = serviceClient.GetTableClient(Constants.FundingRulesTableName);
             client.CreateIfNotExists();
             return host;
         }

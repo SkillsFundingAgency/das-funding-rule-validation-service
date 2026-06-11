@@ -1,4 +1,5 @@
 using Azure.Data.Tables;
+using SFA.DAS.FundingRuleValidation.Jobs.Core;
 
 namespace SFA.DAS.FundingRuleValidation.Jobs.Data.TableStorage;
 
@@ -6,7 +7,7 @@ public class TableStorageRulesRepository(TableServiceClient tableServiceClient):
 {
     public async Task<List<Domain.FundingRule>> GetActiveRulesForDate(DateTime date)
     {
-        var client = tableServiceClient.GetTableClient("FundingRules");
+        var client = tableServiceClient.GetTableClient(Constants.FundingRulesTableName);
         var pages = client.QueryAsync<FundingRuleTableEntity>();
 
         var results = new List<FundingRuleTableEntity>();

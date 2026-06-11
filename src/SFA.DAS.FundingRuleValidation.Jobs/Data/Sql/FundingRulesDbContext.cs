@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
+using SFA.DAS.FundingRuleValidation.Jobs.Core;
 
 namespace SFA.DAS.FundingRuleValidation.Jobs.Data.Sql;
 
@@ -17,7 +18,7 @@ public class FundingRulesDbContext(DbContextOptions<FundingRulesDbContext> optio
     {
         var fundingRuleModelBuilder = modelBuilder.Entity<FundingRuleEntity>();
 
-        fundingRuleModelBuilder.ToTable("FundingRules");
+        fundingRuleModelBuilder.ToTable(Constants.FundingRulesTableName);
         fundingRuleModelBuilder.HasKey(x => x.Id);
         fundingRuleModelBuilder
             .Property(x => x.RuleName)

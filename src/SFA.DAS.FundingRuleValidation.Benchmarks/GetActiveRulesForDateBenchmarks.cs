@@ -4,6 +4,8 @@ using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Order;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using SFA.DAS.FundingRuleValidation.Jobs.Activities;
+using SFA.DAS.FundingRuleValidation.Jobs.Core;
 using SFA.DAS.FundingRuleValidation.Jobs.Data.Sql;
 using SFA.DAS.FundingRuleValidation.Jobs.Data.TableStorage;
 using SFA.DAS.FundingRuleValidation.Jobs.Domain;
@@ -17,10 +19,11 @@ namespace SFA.DAS.FundingRuleValidation.Benchmarks;
 [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory)]
 public class GetActiveRulesForDateBenchmarks
 {
-        private SqlRulesRepository _sqlRulesRepository = null!;
+    private SqlRulesRepository _sqlRulesRepository = null!;
     private TableStorageRulesRepository _tableStorageRulesRepository = null!;
     private FundingRulesDbContext _dbContext = null!;
-
+    private TableServiceClient _tableServiceClient = null!;
+    
     private DateTime _date;
 
     [GlobalSetup]
@@ -52,13 +55,14 @@ public class GetActiveRulesForDateBenchmarks
 
         _dbContext = new FundingRulesDbContext(dbContextOptions);
 
-        var tableServiceClient = new TableServiceClient(tableStorageConnectionString);
+        _tableServiceClient = new TableServiceClient(tableStorageConnectionString);
 
         _sqlRulesRepository = new SqlRulesRepository(_dbContext);
-        _tableStorageRulesRepository = new TableStorageRulesRepository(tableServiceClient);
+        _tableStorageRulesRepository = new TableStorageRulesRepository(_tableServiceClient);
 
         _date = DateTime.UtcNow.Date;
 
+        await InitialiseData();
         await WarmUpRepositories();
     }
 
@@ -82,6 +86,50 @@ public class GetActiveRulesForDateBenchmarks
         await _dbContext.DisposeAsync();
     }
 
+    private async Task InitialiseData()
+    {
+        // SQL Server
+        await _dbContext.FundingRules.ExecuteDeleteAsync();
+        var sqlEntity = new FundingRuleEntity
+        {
+            Id = Guid.NewGuid(),
+            RuleName = nameof(CourseAgeCheckActivity.CourseAgeCheck)
+        };
+        _dbContext.FundingRules.Add(sqlEntity);
+        await _dbContext.SaveChangesAsync();
+        
+        // Table storage
+        var client = _tableServiceClient.GetTableClient(Constants.FundingRulesTableName);
+        await client.CreateIfNotExistsAsync();
+        await DeleteAllTableStorageRowsAsync(client);
+        var tsEntity = new FundingRuleTableEntity
+        {
+            PartitionKey = "LOCAL",
+            RowKey = sqlEntity.Id.ToString(),
+            RuleName = sqlEntity.RuleName
+        };
+        await client.AddEntityAsync(tsEntity);
+    }
+    
+    public static async Task DeleteAllTableStorageRowsAsync(TableClient tableClient)
+    {
+        var queryResults = tableClient.QueryAsync<TableEntity>(select: ["PartitionKey", "RowKey"]);
+        List<TableTransactionAction> batchActions = [];
+
+        await foreach (TableEntity entity in queryResults)
+        {
+            batchActions.Add(new TableTransactionAction(TableTransactionActionType.Delete, entity));
+            if (batchActions.Count != 100) continue;
+            await tableClient.SubmitTransactionAsync(batchActions);
+            batchActions.Clear();
+        }
+
+        if (batchActions.Count > 0)
+        {
+            await tableClient.SubmitTransactionAsync(batchActions);
+        }
+    }
+    
     private async Task WarmUpRepositories()
     {
         await _sqlRulesRepository.GetActiveRulesForDate(_date);
