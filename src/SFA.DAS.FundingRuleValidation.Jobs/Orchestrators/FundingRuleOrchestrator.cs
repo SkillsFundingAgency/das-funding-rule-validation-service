@@ -9,10 +9,10 @@ namespace SFA.DAS.FundingRuleValidation.Jobs.Orchestrators;
 public class FundingRuleOrchestrator
 {
     [Function(nameof(ApplyFundingRules))]
-    public static async Task<List<RuleOutcome>> ApplyFundingRules([OrchestrationTrigger] TaskOrchestrationContext context)
+    public static async Task<List<FundingRestriction>> ApplyFundingRules([OrchestrationTrigger] TaskOrchestrationContext context)
     {
         ILogger logger = context.CreateReplaySafeLogger(nameof(ApplyFundingRules));
-        
+
         var rules = await context.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDateActivity.GetActiveRulesForDate), context.CurrentUtcDateTime);
         if (rules is { Count: 0 })
         {
@@ -29,7 +29,7 @@ public class FundingRuleOrchestrator
             logger.LogInformation("{InstanceId}: Calling {RuleName}", context.InstanceId, rule.RuleName);
             outputs.Add(await context.CallActivityAsync<RuleOutcome>(rule.RuleName, new RuleData(rule, learnerData))); 
         }
-        
-        return outputs;
+
+        return outputs.SelectMany(x => x.FundingRestrictions).ToList();
     }
 }

@@ -40,7 +40,7 @@ public class WhenOrchestratingFundingRulesValidation
         {
             context
                 .Setup(x => x.CallActivityAsync<RuleOutcome>(rule.RuleName, It.IsAny<RuleData>()))
-                .ReturnsAsync(new RuleOutcome(rule.RuleName, rule.RuleName));
+                .ReturnsAsync(new RuleOutcome(rule.RuleName, [new FundingRestriction($"{rule.RuleName}_restrictionName", "restrictionType")]));
         }
 
         // act
@@ -50,7 +50,7 @@ public class WhenOrchestratingFundingRulesValidation
         result.Should().HaveCount(rules.Count);
         result.Should().AllSatisfy(x =>
         {
-            rules.Select(r => r.RuleName).Should().Contain(x.RestrictionName);
+            rules.Select(r => $"{r.RuleName}_restrictionName").Should().Contain(x.RestrictionName);
         });
     }
 }

@@ -14,6 +14,6 @@ public class WhenCheckingAgeForCourse
         var result = await sut.CourseAgeCheck(learnerData, null!);
         
         // assert
-        result.Should().BeEquivalentTo(new RuleOutcome(string.Empty, string.Empty));
+        result.Should().BeEquivalentTo(new RuleOutcome(nameof(CourseAgeCheckActivity.CourseAgeCheck), [new FundingRestriction(string.Empty, string.Empty)]));
     }
 }
