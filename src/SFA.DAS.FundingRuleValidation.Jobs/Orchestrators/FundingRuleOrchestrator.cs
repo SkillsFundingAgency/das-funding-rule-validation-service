@@ -9,7 +9,7 @@ namespace SFA.DAS.FundingRuleValidation.Jobs.Orchestrators;
 public class FundingRuleOrchestrator
 {
     [Function(nameof(ApplyFundingRules))]
-    public async Task<List<RuleOutcome>> ApplyFundingRules([OrchestrationTrigger] TaskOrchestrationContext context)
+    public static async Task<List<RuleOutcome>> ApplyFundingRules([OrchestrationTrigger] TaskOrchestrationContext context)
     {
         ILogger logger = context.CreateReplaySafeLogger(nameof(ApplyFundingRules));
         
