@@ -7,7 +7,7 @@ public class TableStorageRulesRepository(TableServiceClient tableServiceClient):
 {
     public async Task<List<Domain.FundingRule>> GetActiveRulesForDate(DateTime date)
     {
-        var client = tableServiceClient.GetTableClient(Constants.FundingRulesTableName);
+        var client = tableServiceClient.GetTableClient(GlobalConstants.FundingRulesTableName);
         var pages = client.QueryAsync<FundingRuleTableEntity>();
 
         var results = new List<FundingRuleTableEntity>();

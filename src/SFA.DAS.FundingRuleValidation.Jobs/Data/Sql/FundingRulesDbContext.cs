@@ -18,7 +18,7 @@ public class FundingRulesDbContext(DbContextOptions<FundingRulesDbContext> optio
     {
         var fundingRuleModelBuilder = modelBuilder.Entity<FundingRuleEntity>();
 
-        fundingRuleModelBuilder.ToTable(Constants.FundingRulesTableName);
+        fundingRuleModelBuilder.ToTable(GlobalConstants.FundingRulesTableName);
         fundingRuleModelBuilder.HasKey(x => x.Id);
         fundingRuleModelBuilder
             .Property(x => x.RuleName)

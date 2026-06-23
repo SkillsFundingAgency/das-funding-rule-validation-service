@@ -13,6 +13,7 @@ public class FundingRuleOrchestrator
     {
         ILogger logger = context.CreateReplaySafeLogger(nameof(ApplyFundingRules));
 
+        // Fetch the rules
         var rules = await context.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDateActivity.GetActiveRulesForDate), context.CurrentUtcDateTime);
         if (rules is { Count: 0 })
         {
@@ -21,13 +22,13 @@ public class FundingRuleOrchestrator
         }
 
         var outputs = new List<RuleOutcome>();
-        var learnerData = context.GetInput<LearnerData>()!;
+        var command = context.GetInput<ValidateLearnerCommand>()!;
         
         // Note: simplest thing possible, probably not how it should actually work
         foreach (var rule in rules)
         {
             logger.LogInformation("{InstanceId}: Calling {RuleName}", context.InstanceId, rule.RuleName);
-            outputs.Add(await context.CallActivityAsync<RuleOutcome>(rule.RuleName, new RuleData(rule, learnerData))); 
+            outputs.Add(await context.CallActivityAsync<RuleOutcome>(rule.RuleName, new RuleData(rule, command))); 
         }
 
         return outputs.SelectMany(x => x.FundingRestrictions).ToList();

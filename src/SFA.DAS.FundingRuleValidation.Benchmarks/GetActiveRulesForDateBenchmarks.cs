@@ -99,7 +99,7 @@ public class GetActiveRulesForDateBenchmarks
         await _dbContext.SaveChangesAsync();
         
         // Table storage
-        var client = _tableServiceClient.GetTableClient(Constants.FundingRulesTableName);
+        var client = _tableServiceClient.GetTableClient(GlobalConstants.FundingRulesTableName);
         await client.CreateIfNotExistsAsync();
         await DeleteAllTableStorageRowsAsync(client);
         var tsEntity = new FundingRuleTableEntity

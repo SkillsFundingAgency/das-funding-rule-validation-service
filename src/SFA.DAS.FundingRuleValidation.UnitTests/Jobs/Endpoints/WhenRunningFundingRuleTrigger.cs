@@ -24,7 +24,7 @@ public class WhenRunningFundingRuleTrigger
         var fakeHttpRequestData = new FakeHttpRequestData(fakeContext.Object);
 
         // act
-        var result = await FundingRuleHttpEndpoint.FundingRuleTrigger(fakeHttpRequestData, null, Guid.NewGuid(), null!, fakeContext.Object);
+        var result = await FundingRuleHttpEndpoint.FundingRuleHttpTrigger(fakeHttpRequestData, null, null!, fakeContext.Object);
 
         // assert
         result.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -34,7 +34,7 @@ public class WhenRunningFundingRuleTrigger
     public async Task Then_A_New_Funding_Rules_Orchestration_Is_Scheduled(
         Guid learnerId,
         string instanceId,
-        IndividualisedLearnerRecord ilr,
+        ValidateLearnerCommand command,
         Mock<FunctionContext> functionContext,
         Mock<DurableTaskClient> durableClient,
         Mock<IOptions<WorkerOptions>> workerOptions,
@@ -46,7 +46,7 @@ public class WhenRunningFundingRuleTrigger
             .Returns(new Mock<ILogger<FundingRuleHttpEndpoint>>().Object);
 
         string? capturedTaskName = null;
-        LearnerData? capturedLearnerData = null;
+        ValidateLearnerCommand? capturedCommand = null;
         durableClient
             .Setup(x => x.ScheduleNewOrchestrationInstanceAsync(
                 It.IsAny<TaskName>(),
@@ -56,7 +56,7 @@ public class WhenRunningFundingRuleTrigger
             .Callback<TaskName, object?, StartOrchestrationOptions, CancellationToken>((taskName, data, _, _) =>
             {
                 capturedTaskName = taskName.Name;
-                capturedLearnerData = data as LearnerData;
+                capturedCommand = data as ValidateLearnerCommand;
             })
             .ReturnsAsync(instanceId);
 
@@ -71,13 +71,13 @@ public class WhenRunningFundingRuleTrigger
         var fakeHttpRequestData = new FakeHttpRequestData(functionContext.Object);
         
         // act
-        var result = await FundingRuleHttpEndpoint.FundingRuleTrigger(fakeHttpRequestData, ilr, learnerId, durableClient.Object, functionContext.Object);
+        var result = await FundingRuleHttpEndpoint.FundingRuleHttpTrigger(fakeHttpRequestData, command, durableClient.Object, functionContext.Object);
 
         // assert
         result.StatusCode.Should().Be(HttpStatusCode.Accepted);
         capturedTaskName.Should().Be(nameof(FundingRuleOrchestrator.ApplyFundingRules));
-        capturedLearnerData.Should().NotBeNull();
-        capturedLearnerData.Id.Should().Be(learnerId);
-        capturedLearnerData.Ilr.Should().Be(ilr);
+        capturedCommand.Should().NotBeNull();
+        capturedCommand.Should().BeEquivalentTo(command);
+
     }
 }

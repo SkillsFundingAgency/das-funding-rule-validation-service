@@ -6,7 +6,7 @@ namespace SFA.DAS.FundingRuleValidation.Jobs.Activities;
 public class CourseAgeCheckActivity
 {
     [Function(nameof(CourseAgeCheck))]
-    public async Task<RuleOutcome> CourseAgeCheck([ActivityTrigger] LearnerData learnerData, FunctionContext executionContext)
+    public async Task<RuleOutcome> CourseAgeCheck([ActivityTrigger] ValidateLearnerCommand command, FunctionContext executionContext)
     {
         // get course info
         // check learner age against course restrictions
