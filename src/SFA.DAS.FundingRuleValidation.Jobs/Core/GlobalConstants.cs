@@ -3,6 +3,6 @@
 public static class GlobalConstants
 {
     public const string FundingRulesTableName = "FundingRules";
-    public const string IncomingBusName = "validate-learner";
+    public const string IncomingQueueName = "validate-learner";
     public const string ServiceBusConnectionName = "ServiceBusConnection";
 }

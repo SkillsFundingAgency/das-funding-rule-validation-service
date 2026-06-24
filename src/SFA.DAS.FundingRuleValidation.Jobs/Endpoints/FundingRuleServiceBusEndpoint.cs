@@ -13,12 +13,12 @@ public class FundingRuleServiceBusEndpoint
 {
     [Function(nameof(FundingRuleServiceBusTrigger))]
     public async Task FundingRuleServiceBusTrigger(
-        [ServiceBusTrigger(GlobalConstants.IncomingBusName, Connection = GlobalConstants.ServiceBusConnectionName)] ServiceBusReceivedMessage message,
+        [ServiceBusTrigger(GlobalConstants.IncomingQueueName, Connection = GlobalConstants.ServiceBusConnectionName)] ServiceBusReceivedMessage message,
         [DurableClient] DurableTaskClient client,
         FunctionContext executionContext)
     {
         var command = JsonSerializer.Deserialize<ValidateLearnerCommand>(message.Body);
-        if (command is null)
+        if (command is null || command.CorrelationId == Guid.Empty)
         {
             throw new InvalidOperationException("Failed to deserialise ValidateLearnerMessage");
         }
