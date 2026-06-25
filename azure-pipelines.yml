@@ -61,6 +61,7 @@ stages:
   condition: and(succeeded(), eq(variables.Deploy, 'true'))
   variables:
   - group: DevTest Management Resources
+  - group: AT DevTest Shared Resources
   - group: AT das-funding-rule-validation-service
   jobs:
   - template: pipeline-templates/job/deploy.yml
