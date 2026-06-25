@@ -290,8 +290,12 @@
                                     "value": "[parameters('sharedStorageAccountConnectionString')]"
                                 },
                                 {
-                                    "name": "DatabaseConnectionString",
+                                    "name": "ConnectionStrings__SqlConnectionString",
                                     "value": "[parameters('databaseConnectionString')]"
+                                },
+                                {
+                                    "name": "ConnectionStrings__TableStorageConnectionString",
+                                    "value": "[parameters('sharedStorageAccountConnectionString')]"
                                 },
                                 {
                                     "name": "FUNCTIONS_EXTENSION_VERSION",
