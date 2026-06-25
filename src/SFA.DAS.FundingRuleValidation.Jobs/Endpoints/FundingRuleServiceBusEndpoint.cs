@@ -24,6 +24,6 @@ public class FundingRuleServiceBusEndpoint
         }
         var logger = executionContext.GetLogger<FundingRuleServiceBusEndpoint>();
         var instanceId = await client.ScheduleNewOrchestrationInstanceAsync(nameof(FundingRuleOrchestrator.ApplyFundingRules), command);
-        logger.LogInformation("{instanceId}: Started orchestration for learner '{learnerId}'.", instanceId, command.Uln);
+        logger.LogInformation("{instanceId}: Started orchestration for learner '{uln}'.", instanceId, command.Uln);
     }
 }

@@ -9,7 +9,7 @@ namespace SFA.DAS.FundingRuleValidation.Jobs.Orchestrators;
 public class FundingRuleOrchestrator
 {
     [Function(nameof(ApplyFundingRules))]
-    public static async Task<List<FundingRestriction>> ApplyFundingRules([OrchestrationTrigger] TaskOrchestrationContext context)
+    public static async Task ApplyFundingRules([OrchestrationTrigger] TaskOrchestrationContext context)
     {
         ILogger logger = context.CreateReplaySafeLogger(nameof(ApplyFundingRules));
 
@@ -18,7 +18,7 @@ public class FundingRuleOrchestrator
         if (rules is { Count: 0 })
         {
             logger.LogInformation("{InstanceId}: No rules found", context.InstanceId);
-            return [];
+            return;
         }
 
         var outputs = new List<RuleOutcome>();
@@ -31,6 +31,8 @@ public class FundingRuleOrchestrator
             outputs.Add(await context.CallActivityAsync<RuleOutcome>(rule.RuleName, new RuleData(rule, command))); 
         }
 
-        return outputs.SelectMany(x => x.FundingRestrictions).ToList();
+        var status = outputs is { Count: 0 } ? ValidationStatus.Success : ValidationStatus.Error;
+        var result = new ValidateLearnerResult(command.CorrelationId, command.Ukprn, command.Uln, status, outputs);
+        await context.CallActivityAsync<RuleOutcome>(nameof(SendValidationResultActivity), result);
     }
 }

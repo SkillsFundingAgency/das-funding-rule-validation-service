@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Azure.Data.Tables;
+using Azure.Messaging.ServiceBus;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -51,17 +52,21 @@ public static class HostBuilderExtensions
         {
             var services = builder.Services;
             var connectionStrings = builder.Configuration.GetSection("ConnectionStrings").Get<ConnectionStringsConfiguration>();
+            var serviceBusConnectionString = builder.Configuration[GlobalConstants.ServiceBusConnectionName];
+            
+            // IMPORTANT: use only one of the following storage mechanisms
             
             // table storage
             services.AddTransient(_ => new TableServiceClient(connectionStrings?.TableStorageConnectionString));
+            services.AddTransient<IRulesRepository, TableStorageRulesRepository>();
             
             // sql server 
-            services.AddDbContext<FundingRulesDbContext>(options => options.UseSqlServer(connectionStrings?.SqlConnectionString));
-            services.AddTransient<IFundingRulesDataContext, FundingRulesDbContext>();
+            // services.AddDbContext<FundingRulesDbContext>(options => options.UseSqlServer(connectionStrings?.SqlConnectionString));
+            // services.AddTransient<IFundingRulesDataContext, FundingRulesDbContext>();
+            // services.AddTransient<IRulesRepository, SqlRulesRepository>();
             
-            // IMPORTANT: register the required repository implementation
-            services.AddTransient<IRulesRepository, TableStorageRulesRepository>();
-            //services.AddTransient<IRulesRepository, SqlRulesRepository>();
+            // service bus
+            services.AddSingleton(_ => new ServiceBusClient(serviceBusConnectionString));
             
             return builder;
         }
