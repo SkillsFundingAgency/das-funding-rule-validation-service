@@ -4,21 +4,17 @@ public static class DomainMappers
 {
     extension(FundingRuleTableEntity entity)
     {
-        public Domain.FundingRule ToDomain()
+        public Domain.FundingRule ToDomain(List<FundingRuleCourseAssociationTableEntity> courses)
         {
             return new Domain.FundingRule
             {
                 Id = Guid.Parse(entity.RowKey),
-                RuleName = entity.RuleName
+                RuleName = entity.RuleName,
+                EffectiveFrom = entity.EffectiveFrom,
+                EffectiveTo = entity.EffectiveTo,
+                Parameters = entity.Parameters,
+                CourseIds = courses.Select(x => x.RowKey).ToList()
             };
-        }
-    }
-    
-    extension(IEnumerable<FundingRuleTableEntity> entities)
-    {
-        public IEnumerable<Domain.FundingRule> ToDomain()
-        {
-            return entities.Select(x => x.ToDomain());
         }
     }
 }
