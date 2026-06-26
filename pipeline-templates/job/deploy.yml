@@ -42,7 +42,8 @@ jobs:
             StorageAccountResourceGroup: $(SharedEnvResourceGroup)
             TargetFileName: '*.schema.json'
             TableName: Configuration
-            ConfigurationSecrets: {}
+            ConfigurationSecrets:
+              SqlConnectionStringAdAuth: $(SqlConnectionStringAdAuth)
         - template: azure-pipelines-templates/deploy/step/sql-dacpac-deploy.yml@das-platform-building-blocks
           parameters:
             AzureSubscription: ${{ parameters.ServiceConnection }}
