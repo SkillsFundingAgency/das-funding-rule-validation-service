@@ -11,6 +11,7 @@ public class FundingRuleTableEntity : ITableEntity
     public DateTime EffectiveFrom { get; set; }
     public DateTime EffectiveTo { get; set; }
     public string Parameters { get; set; }
+    public string Courses { get; set; }
     public DateTimeOffset? Timestamp { get; set; }
     public ETag ETag { get; set; }
 }

@@ -9,7 +9,7 @@ public class TableStorageRulesRepository(TableServiceClient tableServiceClient):
     public async Task<List<FundingRule>> GetActiveRulesForDatesAsync(List<DateTime> dates, CancellationToken cancellationToken = default)
     {
         var rules = await FetchRulesAsync(dates, cancellationToken);
-        return await PopulateCoursesAsync(rules, cancellationToken);
+        return rules.Select(x => x.ToDomain()).ToList();
     }
 
     private async Task<List<FundingRuleTableEntity>> FetchRulesAsync(List<DateTime> dates, CancellationToken cancellationToken)
@@ -27,25 +27,5 @@ public class TableStorageRulesRepository(TableServiceClient tableServiceClient):
         }
 
         return rules;
-    }
-
-    private async Task<List<Domain.FundingRule>> PopulateCoursesAsync(List<FundingRuleTableEntity> rules, CancellationToken cancellationToken)
-    {
-        var results = new List<Domain.FundingRule>();
-        var courseAssociationsClient = tableServiceClient.GetTableClient(GlobalConstants.FundingRuleCourseAssociationsTableName);
-        foreach (var rule in rules)
-        {
-            var filter = $"PartitionKey eq '{rule.RowKey}'";
-            var courseAssociationsPages = courseAssociationsClient.QueryAsync<FundingRuleCourseAssociationTableEntity>(filter, cancellationToken: cancellationToken);
-            var courses = new List<FundingRuleCourseAssociationTableEntity>();
-            await foreach (var page in courseAssociationsPages.AsPages().WithCancellation(cancellationToken))
-            {
-                courses.AddRange(page.Values);
-            }
-            
-            results.Add(rule.ToDomain(courses));
-        }
-
-        return results;
     }
 }

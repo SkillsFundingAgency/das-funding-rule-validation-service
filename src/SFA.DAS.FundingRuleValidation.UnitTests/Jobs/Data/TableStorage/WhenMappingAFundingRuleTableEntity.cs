@@ -1,20 +1,24 @@
-﻿using SFA.DAS.FundingRuleValidation.Jobs.Data.TableStorage;
+﻿using System.Text.Json;
+using SFA.DAS.FundingRuleValidation.Jobs.Data.TableStorage;
 
 namespace SFA.DAS.FundingRuleValidation.UnitTests.Jobs.Data.TableStorage;
 
 public class WhenMappingAFundingRuleTableEntity
 {
     [Test, MoqAutoData]
-    public void Then_The_Funding_Rule_Is_Mapped_To_The_Domain_Correctly(FundingRuleTableEntity entity, List<FundingRuleCourseAssociationTableEntity> associations)
+    public void Then_The_Funding_Rule_Is_Mapped_To_The_Domain_Correctly(
+        FundingRuleTableEntity entity,
+        List<string> courses)
     {
         // arrange
         entity.RowKey = Guid.NewGuid().ToString();
+        entity.Courses = JsonSerializer.Serialize(courses);
 
         // act
-        var result = entity.ToDomain(associations);
+        var result = entity.ToDomain();
 
         // assert
         result.Should().BeEquivalentTo(entity, o => o.ExcludingMissingMembers());
-        result.CourseIds.Should().BeEquivalentTo(associations.Select(x => x.RowKey));
+        result.CourseIds.Should().BeEquivalentTo(courses);
     }
 }
