@@ -41,7 +41,7 @@ resources:
   - pipeline: das-employer-config
     project: Digital Apprenticeship Service
     source: das-employer-config
-    branch: master
+    branch: FAI-3443-FAI-3447-FundingRulesServices
 
 stages:
 - stage: Build
