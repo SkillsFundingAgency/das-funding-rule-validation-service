@@ -1,25 +1,11 @@
 ﻿using System.Text.Json;
 using Azure.Messaging.ServiceBus;
-using Azure.Messaging.ServiceBus.Administration;
 using Microsoft.Extensions.Configuration;
 using SFA.DAS.FundingRuleValidation.Jobs.Core;
 using SFA.DAS.FundingRuleValidation.Jobs.Domain;
 
 var config = new ConfigurationBuilder().AddUserSecrets<Program>().Build();
-var adminConnectionString = config["AdminServiceBusConnection"];
 var connectionString = config[GlobalConstants.ServiceBusConnectionName];
-
-// create the queue if it doesn't exist
-var adminClient = new ServiceBusAdministrationClient(adminConnectionString);
-if (await adminClient.QueueExistsAsync(GlobalConstants.IncomingQueueName) == false)
-{
-    await adminClient.CreateQueueAsync(new CreateQueueOptions(GlobalConstants.IncomingQueueName));
-}
-
-if (await adminClient.QueueExistsAsync(GlobalConstants.OutgoingQueueName) == false)
-{
-    await adminClient.CreateQueueAsync(new CreateQueueOptions(GlobalConstants.OutgoingQueueName));
-}
 
 // send a message
 await using var client = new ServiceBusClient(connectionString);
@@ -44,11 +30,43 @@ var courses = new List<Course>
 };
 
 var command = new ValidateLearnerCommand(Guid.NewGuid(), ukprn, uln, courses);
-await sender.SendMessageAsync(new ServiceBusMessage(JsonSerializer.Serialize(command)));
 
-Console.WriteLine("Waiting for result");
-var message = await receiver.ReceiveMessageAsync(TimeSpan.FromSeconds(300));
-await receiver.CompleteMessageAsync(message);
+var cts = new CancellationTokenSource();
+var token = cts.Token;
+var readerTask = Task.Run(ReceiveMonitor);
 
-Console.WriteLine($"Received message: {message.Body}");
-Console.ReadLine();
+while (true)
+{
+    var key = Console.ReadKey();
+    switch (key.Key)
+    {
+        case ConsoleKey.Spacebar:
+            var cursorPos = Console.GetCursorPosition();
+            Console.SetCursorPosition(cursorPos.Left-1, cursorPos.Top);
+            Console.WriteLine("Sending message...");
+            await sender.SendMessageAsync(new ServiceBusMessage(JsonSerializer.Serialize(command)));
+            break;
+        case ConsoleKey.Escape:
+            cts.Cancel();
+            await readerTask;
+            Environment.Exit(0);
+            break;
+    }
+}
+
+async Task ReceiveMonitor()
+{
+    while (true)
+    {
+        try
+        {
+            var message = await receiver.ReceiveMessageAsync(TimeSpan.FromSeconds(300), token);
+            await receiver.CompleteMessageAsync(message, token);
+            Console.WriteLine($"Received message: {message.Body}");
+        }
+        catch (TaskCanceledException)
+        {
+            break;
+        }
+    }
+}
