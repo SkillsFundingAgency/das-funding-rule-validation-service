@@ -13,7 +13,7 @@ public static class DomainMappers
                 EffectiveFrom = entity.EffectiveFrom,
                 EffectiveTo = entity.EffectiveTo,
                 Parameters = entity.Parameters,
-                CourseIds = courses.Select(x => x.RowKey).ToList()
+                CourseIds = courses.Select(x => x.RowKey).ToHashSet()
             };
         }
     }

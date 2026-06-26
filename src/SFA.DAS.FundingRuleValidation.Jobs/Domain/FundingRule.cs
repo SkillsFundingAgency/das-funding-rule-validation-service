@@ -7,5 +7,5 @@ public class FundingRule
     public DateTime? EffectiveFrom { get; set; }
     public DateTime? EffectiveTo { get; set; }
     public string Parameters { get; set; }
-    public List<string> CourseIds { get; set; }
+    public HashSet<string> CourseIds { get; set; }
 }
