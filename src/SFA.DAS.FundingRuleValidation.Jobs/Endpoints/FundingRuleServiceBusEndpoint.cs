@@ -12,7 +12,7 @@ namespace SFA.DAS.FundingRuleValidation.Jobs.Endpoints;
 public class FundingRuleServiceBusEndpoint
 {
     [Function(nameof(FundingRuleServiceBusTrigger))]
-    public async Task FundingRuleServiceBusTrigger(
+    public static async Task FundingRuleServiceBusTrigger(
         [ServiceBusTrigger(GlobalConstants.IncomingQueueName, Connection = GlobalConstants.ServiceBusConnectionName)] ServiceBusReceivedMessage message,
         [DurableClient] DurableTaskClient client,
         FunctionContext executionContext)

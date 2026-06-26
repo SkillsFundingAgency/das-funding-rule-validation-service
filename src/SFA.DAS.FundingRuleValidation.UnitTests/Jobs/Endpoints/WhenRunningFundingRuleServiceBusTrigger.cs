@@ -1,5 +1,10 @@
 ﻿using System.Net;
+using System.Text;
+using System.Text.Json;
+using Azure.Core.Amqp;
 using Azure.Core.Serialization;
+using Azure.Messaging.ServiceBus;
+using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.DurableTask;
 using Microsoft.DurableTask.Client;
@@ -11,28 +16,23 @@ using SFA.DAS.FundingRuleValidation.Jobs.Orchestrators;
 
 namespace SFA.DAS.FundingRuleValidation.UnitTests.Jobs.Endpoints;
 
-public class WhenRunningFundingRuleTrigger
+public class WhenRunningFundingRuleServiceBusTrigger
 {
     [Test, MoqAutoData]
-    public async Task Then_BadRequest_Is_Returned_If_No_Ilr_Is_Submitted(Mock<FunctionContext> fakeContext)
+    public async Task Then_Exception_Is_Thrown_If_Invalid_Message_Is_Received(Mock<FunctionContext> fakeContext)
     {
         // arrange
-        fakeContext
-            .Setup(x => x.InstanceServices.GetService(typeof(ILogger<FundingRuleHttpEndpoint>)))
-            .Returns(new Mock<ILogger<FundingRuleHttpEndpoint>>().Object);
-        
-        var fakeHttpRequestData = new FakeHttpRequestData(fakeContext.Object);
+        var message = ServiceBusModelFactory.ServiceBusReceivedMessage(new BinaryData("{}"u8.ToArray()));
 
         // act
-        var result = await FundingRuleHttpEndpoint.FundingRuleHttpTrigger(fakeHttpRequestData, null, null!, fakeContext.Object);
+        var action = async () => await FundingRuleServiceBusEndpoint.FundingRuleServiceBusTrigger(message, null!, fakeContext.Object);
 
         // assert
-        result.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await action.Should().ThrowAsync<InvalidOperationException>();
     }
     
     [Test, MoqAutoData]
     public async Task Then_A_New_Funding_Rules_Orchestration_Is_Scheduled(
-        Guid learnerId,
         string instanceId,
         ValidateLearnerCommand command,
         Mock<FunctionContext> functionContext,
@@ -42,8 +42,8 @@ public class WhenRunningFundingRuleTrigger
     {
         // arrange
         functionContext
-            .Setup(x => x.InstanceServices.GetService(typeof(ILogger<FundingRuleHttpEndpoint>)))
-            .Returns(new Mock<ILogger<FundingRuleHttpEndpoint>>().Object);
+            .Setup(x => x.InstanceServices.GetService(typeof(ILogger<FundingRuleServiceBusEndpoint>)))
+            .Returns(new Mock<ILogger<FundingRuleServiceBusEndpoint>>().Object);
 
         string? capturedTaskName = null;
         ValidateLearnerCommand? capturedCommand = null;
@@ -68,16 +68,14 @@ public class WhenRunningFundingRuleTrigger
             .Setup(x => x.InstanceServices.GetService(typeof(IOptions<WorkerOptions>)))
             .Returns(workerOptions.Object);
         
-        var fakeHttpRequestData = new FakeHttpRequestData(functionContext.Object);
+        var message = ServiceBusModelFactory.ServiceBusReceivedMessage(new BinaryData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(command))));
         
         // act
-        var result = await FundingRuleHttpEndpoint.FundingRuleHttpTrigger(fakeHttpRequestData, command, durableClient.Object, functionContext.Object);
+        await FundingRuleServiceBusEndpoint.FundingRuleServiceBusTrigger(message, durableClient.Object, functionContext.Object);
 
         // assert
-        result.StatusCode.Should().Be(HttpStatusCode.Accepted);
         capturedTaskName.Should().Be(nameof(FundingRuleOrchestrator.ApplyFundingRules));
         capturedCommand.Should().NotBeNull();
         capturedCommand.Should().BeEquivalentTo(command);
-
     }
 }
