@@ -15,9 +15,11 @@ public class FundingRuleOrchestrator
         
         var command = context.GetInput<ValidateLearnerCommand>()!;
         ValidateLearnerResult result;
-
-        // Fetch the rules
-        var rules = await context.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDateActivity.GetActiveRulesForDate), context.CurrentUtcDateTime);
+        
+        // Fetch all rules for all courses
+        var courseDates = command.Courses.Select(x => x.StartDate.Date).Distinct().ToList();
+        var rules = await context.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDateActivity.GetActiveRulesForDates), courseDates);
+        
         if (rules is { Count: 0 })
         {
             logger.LogInformation("{InstanceId}: No rules found", context.InstanceId);
@@ -27,11 +29,26 @@ public class FundingRuleOrchestrator
         }
 
         var outputs = new List<RuleOutcome>();
-        // Note: simplest thing possible, probably not how it should actually work
         foreach (var rule in rules)
         {
+            // get only the courses for the rule
+            var courses = command.Courses.Where(x => 
+                rule.CourseIds.Contains(x.Id)
+                && x.StartDate >= rule.EffectiveFrom
+                && x.StartDate <= rule.EffectiveTo
+            ).ToList();
+            
+            if (!courses.Any())
+            {
+                // no courses apply to this rule
+                continue;
+            }
+            
+            // send only the applicable data
+            var ruleCommand = command with { Courses = courses };
+            
             logger.LogInformation("{InstanceId}: Calling {RuleName}", context.InstanceId, rule.RuleName);
-            outputs.Add(await context.CallActivityAsync<RuleOutcome>(rule.RuleName, new RuleData(rule, command))); 
+            outputs.Add(await context.CallActivityAsync<RuleOutcome>(rule.RuleName, new RuleData(rule, ruleCommand))); 
         }
 
         var status = outputs.SelectMany(x => x.FundingRestrictions).Any()

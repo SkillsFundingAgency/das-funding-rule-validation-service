@@ -1,4 +1,5 @@
-﻿using Microsoft.DurableTask;
+﻿using AutoFixture;
+using Microsoft.DurableTask;
 using SFA.DAS.FundingRuleValidation.Jobs.Activities;
 using SFA.DAS.FundingRuleValidation.Jobs.Domain;
 using SFA.DAS.FundingRuleValidation.Jobs.Orchestrators;
@@ -18,7 +19,7 @@ public class WhenOrchestratingFundingRulesValidation
             .Returns(command);
         
         context
-            .Setup(x => x.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDateActivity.GetActiveRulesForDate), It.IsAny<DateTime>()))
+            .Setup(x => x.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDateActivity.GetActiveRulesForDates), It.IsAny<List<DateTime>>()))
             .ReturnsAsync([]);
         
         // act
@@ -37,15 +38,16 @@ public class WhenOrchestratingFundingRulesValidation
     [Test, MoqAutoData]
     public async Task Then_Passing_Rule_Outcomes_Are_Returned(
         List<FundingRule> rules,
+        Course course,
         Mock<TaskOrchestrationContext> context)
     {
         // arrange
         var ruleNames = rules.Select(x => x.RuleName).ToHashSet();
-        
-        var command = new ValidateLearnerCommand(Guid.NewGuid(), 123456789, 987654321, []);
+        course.StartDate = DateTime.UtcNow;
+        var command = new ValidateLearnerCommand(Guid.NewGuid(), 123456789, 987654321, [course]);
         
         context
-            .Setup(x => x.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDateActivity.GetActiveRulesForDate), It.IsAny<DateTime>()))
+            .Setup(x => x.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDateActivity.GetActiveRulesForDates), It.IsAny<List<DateTime>>()))
             .ReturnsAsync(rules);
     
         context
@@ -54,6 +56,9 @@ public class WhenOrchestratingFundingRulesValidation
     
         foreach (var rule in rules)
         {
+            rule.EffectiveFrom = DateTime.UtcNow.AddDays(-10);
+            rule.EffectiveTo = DateTime.UtcNow.AddDays(10);
+            rule.CourseIds = command.Courses.Select(x => x.Id).ToHashSet();
             context
                 .Setup(x => x.CallActivityAsync<RuleOutcome>(rule.RuleName, It.IsAny<RuleData>()))
                 .ReturnsAsync(new RuleOutcome(rule.RuleName, []));
@@ -84,15 +89,16 @@ public class WhenOrchestratingFundingRulesValidation
     [Test, MoqAutoData]
     public async Task Then_Failing_Rule_Outcomes_Are_Returned(
         List<FundingRule> rules,
+        Course course,
         Mock<TaskOrchestrationContext> context)
     {
         // arrange
         var ruleNames = rules.Select(x => x.RuleName).ToHashSet();
-        
-        var command = new ValidateLearnerCommand(Guid.NewGuid(), 123456789, 987654321, []);
+        course.StartDate = DateTime.UtcNow;
+        var command = new ValidateLearnerCommand(Guid.NewGuid(), 123456789, 987654321, [course]);
         
         context
-            .Setup(x => x.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDateActivity.GetActiveRulesForDate), It.IsAny<DateTime>()))
+            .Setup(x => x.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDateActivity.GetActiveRulesForDates), It.IsAny<List<DateTime>>()))
             .ReturnsAsync(rules);
     
         context
@@ -101,9 +107,12 @@ public class WhenOrchestratingFundingRulesValidation
     
         foreach (var rule in rules)
         {
+            rule.EffectiveFrom = DateTime.UtcNow.AddDays(-10);
+            rule.EffectiveTo = DateTime.UtcNow.AddDays(10);
+            rule.CourseIds = command.Courses.Select(x => x.Id).ToHashSet();
             context
                 .Setup(x => x.CallActivityAsync<RuleOutcome>(rule.RuleName, It.IsAny<RuleData>()))
-                .ReturnsAsync(new RuleOutcome(rule.RuleName, [new FundingRestriction("CourseId", "RestrictionName", "RestrictionType")]));
+                .ReturnsAsync(new RuleOutcome(rule.RuleName, [new FundingRestriction(Guid.NewGuid(), "RuleName", "CourseId", "RestrictionName", "RestrictionType")]));
         }
 
         ValidateLearnerResult? capturedResult = null;

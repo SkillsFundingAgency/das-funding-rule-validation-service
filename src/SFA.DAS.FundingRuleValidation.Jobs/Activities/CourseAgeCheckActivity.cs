@@ -29,7 +29,12 @@ public class CourseAgeCheckActivity
                 continue;
             }
 
-            fundingRestrictions.Add(new FundingRestriction(course.Id, nameof(Course.AgeAtStartOfCourse), course.AgeAtStartOfCourse.ToString()));
+            fundingRestrictions.Add(new FundingRestriction(
+                ruleData.Rule.Id,
+                ruleData.Rule.RuleName,
+                course.Id,
+                nameof(Course.AgeAtStartOfCourse),
+                course.AgeAtStartOfCourse.ToString()));
         }
         
         return new RuleOutcome(nameof(CourseAgeCheck), fundingRestrictions);

@@ -7,18 +7,21 @@ namespace SFA.DAS.FundingRuleValidation.Jobs.Activities;
 
 public class GetActiveRulesForDateActivity(IRulesRepository rulesRepository, ILogger<GetActiveRulesForDateActivity> logger)
 {
-    [Function(nameof(GetActiveRulesForDate))]
-    public async Task<List<FundingRule>> GetActiveRulesForDate([ActivityTrigger] DateTime date, FunctionContext executionContext)
+    [Function(nameof(GetActiveRulesForDates))]
+    public async Task<List<FundingRule>> GetActiveRulesForDates([ActivityTrigger] List<DateTime> dates, FunctionContext executionContext)
     {
-        var result = await rulesRepository.GetActiveRulesForDate(date);
+        var result = await rulesRepository.GetActiveRulesForDatesAsync(dates, executionContext.CancellationToken);
+        
         if (result is not { Count: > 0 })
         {
-            logger.LogInformation("Returned no rules for {QueryDate:o}", date);
+            logger.LogInformation("Returned no rules for dates: {QueryDate:o}", string.Join(", ", dates));
             return [];
         }
 
-        var ruleNames = string.Join(", ", result.Select(x => x.RuleName));
-        logger.LogInformation("Returned the following rules for {QueryDate:o} '{RuleNames}'", date, ruleNames);
+        logger.LogInformation(
+            "Returned the following rules for dates: {QueryDate:o} '{RuleNames}'",
+            string.Join(", ", dates),
+            string.Join(", ", result.Select(x => x.RuleName)));
         return result;
     }
 }

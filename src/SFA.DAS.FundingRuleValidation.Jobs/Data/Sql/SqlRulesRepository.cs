@@ -5,9 +5,8 @@ namespace SFA.DAS.FundingRuleValidation.Jobs.Data.Sql;
 
 public class SqlRulesRepository(IFundingRulesDataContext dbContext): IRulesRepository
 {
-    public async Task<List<FundingRule>> GetActiveRulesForDate(DateTime date)
+    public Task<List<FundingRule>> GetActiveRulesForDatesAsync(List<DateTime> dates, CancellationToken cancellationToken = default)
     {
-        var rules = await dbContext.FundingRules.ToListAsync();
-        return rules.ToDomain().ToList();
+        throw new NotImplementedException();
     }
 }

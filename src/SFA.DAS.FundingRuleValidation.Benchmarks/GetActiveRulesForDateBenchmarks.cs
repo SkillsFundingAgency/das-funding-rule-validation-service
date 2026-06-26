@@ -24,7 +24,7 @@ public class GetActiveRulesForDateBenchmarks
     private FundingRulesDbContext _dbContext = null!;
     private TableServiceClient _tableServiceClient = null!;
     
-    private DateTime _date;
+    private List<DateTime> _dates;
 
     [GlobalSetup]
     public async Task GlobalSetup()
@@ -60,7 +60,7 @@ public class GetActiveRulesForDateBenchmarks
         _sqlRulesRepository = new SqlRulesRepository(_dbContext);
         _tableStorageRulesRepository = new TableStorageRulesRepository(_tableServiceClient);
 
-        _date = DateTime.UtcNow.Date;
+        _dates = [DateTime.UtcNow.Date];
 
         await InitialiseData();
         await WarmUpRepositories();
@@ -70,14 +70,14 @@ public class GetActiveRulesForDateBenchmarks
     [Benchmark(Baseline = true)]
     public async Task<List<FundingRule>> SqlServer()
     {
-        return await _sqlRulesRepository.GetActiveRulesForDate(_date);
+        return await _sqlRulesRepository.GetActiveRulesForDatesAsync(_dates);
     }
 
     [BenchmarkCategory("GetActiveRulesForDate")]
     [Benchmark]
     public async Task<List<FundingRule>> AzureTableStorage()
     {
-        return await _tableStorageRulesRepository.GetActiveRulesForDate(_date);
+        return await _tableStorageRulesRepository.GetActiveRulesForDatesAsync(_dates);
     }
 
     [GlobalCleanup]
@@ -132,7 +132,7 @@ public class GetActiveRulesForDateBenchmarks
     
     private async Task WarmUpRepositories()
     {
-        await _sqlRulesRepository.GetActiveRulesForDate(_date);
-        await _tableStorageRulesRepository.GetActiveRulesForDate(_date);
+        await _sqlRulesRepository.GetActiveRulesForDatesAsync(_dates);
+        await _tableStorageRulesRepository.GetActiveRulesForDatesAsync(_dates);
     }
 }
