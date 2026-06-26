@@ -5,10 +5,10 @@ using SFA.DAS.FundingRuleValidation.Jobs.Domain;
 
 namespace SFA.DAS.FundingRuleValidation.Jobs.Activities;
 
-public class GetActiveRulesForDateActivity(IRulesRepository rulesRepository, ILogger<GetActiveRulesForDateActivity> logger)
+public class GetActiveRulesForDatesActivity(IRulesRepository rulesRepository, ILogger<GetActiveRulesForDatesActivity> logger)
 {
-    [Function(nameof(GetActiveRulesForDates))]
-    public async Task<List<FundingRule>> GetActiveRulesForDates([ActivityTrigger] List<DateTime> dates, FunctionContext executionContext)
+    [Function(nameof(GetActiveRulesForDatesActivity))]
+    public async Task<List<FundingRule>> Run([ActivityTrigger] List<DateTime> dates, FunctionContext executionContext)
     {
         var result = await rulesRepository.GetActiveRulesForDatesAsync(dates, executionContext.CancellationToken);
         

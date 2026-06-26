@@ -12,7 +12,7 @@ public class WhenGettingActiveRulesForDates
         List<DateTime> dates,
         List<FundingRule> rules,
         [Frozen] Mock<IRulesRepository> rulesRepository,
-        [Greedy] GetActiveRulesForDateActivity sut)
+        [Greedy] GetActiveRulesForDatesActivity sut)
     {
         // arrange
         List<DateTime>? capturedDates = null;
@@ -22,7 +22,7 @@ public class WhenGettingActiveRulesForDates
             .ReturnsAsync(rules);
         
         // act
-        var result = await sut.GetActiveRulesForDates(dates, Mock.Of<FunctionContext>());
+        var result = await sut.Run(dates, Mock.Of<FunctionContext>());
         
         // assert
         result.Should().BeEquivalentTo(rules);
@@ -33,7 +33,7 @@ public class WhenGettingActiveRulesForDates
     public async Task Then_No_Active_Rules_Are_Returned(
         List<DateTime> dates,
         [Frozen] Mock<IRulesRepository> rulesRepository,
-        [Greedy] GetActiveRulesForDateActivity sut)
+        [Greedy] GetActiveRulesForDatesActivity sut)
     {
         // arrange
         rulesRepository
@@ -41,7 +41,7 @@ public class WhenGettingActiveRulesForDates
             .ReturnsAsync((List<FundingRule>)null!);
         
         // act
-        var result = await sut.GetActiveRulesForDates(dates, Mock.Of<FunctionContext>());
+        var result = await sut.Run(dates, Mock.Of<FunctionContext>());
         
         // assert
         result.Should().BeEquivalentTo(new List<FundingRule>());

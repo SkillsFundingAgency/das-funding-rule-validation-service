@@ -1,5 +1,4 @@
-﻿using AutoFixture;
-using Microsoft.DurableTask;
+﻿using Microsoft.DurableTask;
 using SFA.DAS.FundingRuleValidation.Jobs.Activities;
 using SFA.DAS.FundingRuleValidation.Jobs.Domain;
 using SFA.DAS.FundingRuleValidation.Jobs.Orchestrators;
@@ -19,7 +18,7 @@ public class WhenOrchestratingFundingRulesValidation
             .Returns(command);
         
         context
-            .Setup(x => x.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDateActivity.GetActiveRulesForDates), It.IsAny<List<DateTime>>()))
+            .Setup(x => x.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDatesActivity), It.IsAny<List<DateTime>>()))
             .ReturnsAsync([]);
         
         // act
@@ -47,7 +46,7 @@ public class WhenOrchestratingFundingRulesValidation
         var command = new ValidateLearnerCommand(Guid.NewGuid(), 123456789, 987654321, [course]);
         
         context
-            .Setup(x => x.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDateActivity.GetActiveRulesForDates), It.IsAny<List<DateTime>>()))
+            .Setup(x => x.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDatesActivity), It.IsAny<List<DateTime>>()))
             .ReturnsAsync(rules);
     
         context
@@ -98,7 +97,7 @@ public class WhenOrchestratingFundingRulesValidation
         var command = new ValidateLearnerCommand(Guid.NewGuid(), 123456789, 987654321, [course]);
         
         context
-            .Setup(x => x.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDateActivity.GetActiveRulesForDates), It.IsAny<List<DateTime>>()))
+            .Setup(x => x.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDatesActivity), It.IsAny<List<DateTime>>()))
             .ReturnsAsync(rules);
     
         context

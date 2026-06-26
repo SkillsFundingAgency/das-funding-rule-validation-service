@@ -18,7 +18,7 @@ public class FundingRuleOrchestrator
         
         // Fetch all rules for all courses
         var courseDates = command.Courses.Select(x => x.StartDate.Date).Distinct().ToList();
-        var rules = await context.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDateActivity.GetActiveRulesForDates), courseDates);
+        var rules = await context.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDatesActivity), courseDates);
         
         if (rules is { Count: 0 })
         {
