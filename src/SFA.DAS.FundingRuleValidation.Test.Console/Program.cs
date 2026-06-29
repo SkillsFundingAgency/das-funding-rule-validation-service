@@ -60,7 +60,7 @@ async Task ReceiveMonitor()
     {
         try
         {
-            var message = await receiver.ReceiveMessageAsync(TimeSpan.FromSeconds(300), token);
+            var message = await receiver.ReceiveMessageAsync(cancellationToken: token);
             await receiver.CompleteMessageAsync(message, token);
             Console.WriteLine($"Received message: {message.Body}");
         }
