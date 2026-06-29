@@ -24,10 +24,10 @@ public class WhenCheckingAgeForCourse
         };
 
         // act
-        var result = CourseAgeCheckActivity.CourseAgeCheck(ruleData, null!);
+        var result = CourseAgeCheckActivity.Run(ruleData, null!);
         
         // assert
-        result.Should().BeEquivalentTo(new RuleOutcome(ruleData.Rule.Id, nameof(CourseAgeCheckActivity.CourseAgeCheck), []));
+        result.Should().BeEquivalentTo(new RuleOutcome(ruleData.Rule.Id, nameof(CourseAgeCheckActivity), []));
     }
 
     [Test]
@@ -55,7 +55,7 @@ public class WhenCheckingAgeForCourse
         };
         
         // act
-        var result = CourseAgeCheckActivity.CourseAgeCheck(ruleData, null!);
+        var result = CourseAgeCheckActivity.Run(ruleData, null!);
         
         // assert
         result.FundingRestrictions.Any().Should().Be(fails);
@@ -82,7 +82,7 @@ public class WhenCheckingAgeForCourse
         };
         
         // act
-        var result = CourseAgeCheckActivity.CourseAgeCheck(ruleData, null!);
+        var result = CourseAgeCheckActivity.Run(ruleData, null!);
         
         // assert
         result.FundingRestrictions.Should().HaveCount(2);

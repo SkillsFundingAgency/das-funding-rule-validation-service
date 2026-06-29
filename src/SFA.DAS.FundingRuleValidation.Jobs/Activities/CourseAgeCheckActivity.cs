@@ -7,8 +7,8 @@ namespace SFA.DAS.FundingRuleValidation.Jobs.Activities;
 
 public static class CourseAgeCheckActivity
 {
-    [Function(nameof(CourseAgeCheck))]
-    public static RuleOutcome CourseAgeCheck([ActivityTrigger] RuleData ruleData, FunctionContext executionContext)
+    [Function(nameof(CourseAgeCheckActivity))]
+    public static RuleOutcome Run([ActivityTrigger] RuleData ruleData, FunctionContext executionContext)
     {
         var parameters = JsonSerializer.Deserialize<CourseAgeCheckParameters>(ruleData.Rule.Parameters)!;
         var fundingRestrictions = ruleData.Command.Courses
@@ -16,6 +16,6 @@ public static class CourseAgeCheckActivity
             .Select(x => new FundingRestriction(x.Id, nameof(Course.AgeAtStartOfCourse), x.AgeAtStartOfCourse.ToString()))
             .ToList();
         
-        return new RuleOutcome(ruleData.Rule.Id, nameof(CourseAgeCheck), fundingRestrictions);
+        return new RuleOutcome(ruleData.Rule.Id, nameof(CourseAgeCheckActivity), fundingRestrictions);
     } 
 }

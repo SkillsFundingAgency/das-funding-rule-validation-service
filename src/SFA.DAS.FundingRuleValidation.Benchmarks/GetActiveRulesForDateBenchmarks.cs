@@ -123,7 +123,7 @@ public class GetActiveRulesForDateBenchmarks
             var sqlFundingRule = new FundingRuleEntity
             {
                 Id = fundingRuleId,
-                RuleName = $"{nameof(CourseAgeCheckActivity.CourseAgeCheck)}_{index+1}",
+                RuleName = $"{nameof(CourseAgeCheckActivity)}_{index+1}",
                 Enabled = true,
                 EffectiveFrom = pointInTime.AddDays(-Random.Shared.Next(1, 10)).Date,
                 EffectiveTo = pointInTime.AddDays(Random.Shared.Next(1, 10)).Date,
