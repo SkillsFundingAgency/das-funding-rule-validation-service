@@ -2,12 +2,10 @@
 using Azure.Data.Tables;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Azure.Functions.Worker.Builder;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using SFA.DAS.FundingRuleValidation.Jobs.Data;
-using SFA.DAS.FundingRuleValidation.Jobs.Data.Sql;
 using SFA.DAS.FundingRuleValidation.Jobs.Data.TableStorage;
 
 namespace SFA.DAS.FundingRuleValidation.Jobs.Core.Configuration;

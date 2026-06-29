@@ -38,7 +38,7 @@ public class FundingRuleOrchestrator
                 && x.StartDate <= rule.EffectiveTo
             ).ToList();
             
-            if (!courses.Any())
+            if (courses.Count == 0)
             {
                 // no courses apply to this rule
                 continue;

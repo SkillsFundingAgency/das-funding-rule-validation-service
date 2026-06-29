@@ -24,7 +24,7 @@ public class FundingRuleHttpEndpoint
         }
         
         var instanceId = await client.ScheduleNewOrchestrationInstanceAsync(nameof(FundingRuleOrchestrator.ApplyFundingRules), command);
-        logger.LogInformation("{instanceId}: Started orchestration for correlated message '{correlationId}'", instanceId, command.CorrelationId);
+        logger.LogInformation("{InstanceId}: Started orchestration for correlated message '{CorrelationId}'", instanceId, command.CorrelationId);
         return await client.CreateCheckStatusResponseAsync(req, instanceId);
     }
 }

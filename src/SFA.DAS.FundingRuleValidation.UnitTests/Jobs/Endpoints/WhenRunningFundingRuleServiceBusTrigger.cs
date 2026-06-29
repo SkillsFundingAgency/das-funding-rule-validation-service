@@ -1,10 +1,7 @@
-﻿using System.Net;
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
-using Azure.Core.Amqp;
 using Azure.Core.Serialization;
 using Azure.Messaging.ServiceBus;
-using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.DurableTask;
 using Microsoft.DurableTask.Client;

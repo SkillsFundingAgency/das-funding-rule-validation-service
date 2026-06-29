@@ -8,34 +8,13 @@ namespace SFA.DAS.FundingRuleValidation.Jobs.Activities;
 public class CourseAgeCheckActivity
 {
     [Function(nameof(CourseAgeCheck))]
-    public async Task<RuleOutcome> CourseAgeCheck([ActivityTrigger] RuleData ruleData, FunctionContext executionContext)
+    public RuleOutcome CourseAgeCheck([ActivityTrigger] RuleData ruleData, FunctionContext executionContext)
     {
-        var fundingRestrictions = new List<FundingRestriction>();
         var parameters = JsonSerializer.Deserialize<CourseAgeCheckParameters>(ruleData.Rule.Parameters)!;
-        var keys = ruleData.Rule.CourseIds.ToHashSet();
-        
-        foreach (var course in ruleData.Command.Courses)
-        {
-            if (!keys.Contains(course.Id))
-            {
-                // doesn't apply or passes
-                continue;
-            }
-
-            if (parameters.MinimumAge <= course.AgeAtStartOfCourse
-                && course.AgeAtStartOfCourse <= parameters.MaximumAge)
-            {
-                // passes
-                continue;
-            }
-
-            fundingRestrictions.Add(new FundingRestriction(
-                ruleData.Rule.Id,
-                ruleData.Rule.RuleName,
-                course.Id,
-                nameof(Course.AgeAtStartOfCourse),
-                course.AgeAtStartOfCourse.ToString()));
-        }
+        var fundingRestrictions = ruleData.Command.Courses
+            .Where(x => parameters.MinimumAge > x.AgeAtStartOfCourse || x.AgeAtStartOfCourse > parameters.MaximumAge)
+            .Select(x => new FundingRestriction(ruleData.Rule.Id, ruleData.Rule.RuleName, x.Id, nameof(Course.AgeAtStartOfCourse), x.AgeAtStartOfCourse.ToString()))
+            .ToList();
         
         return new RuleOutcome(nameof(CourseAgeCheck), fundingRestrictions);
     } 

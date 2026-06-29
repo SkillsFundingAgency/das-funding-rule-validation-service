@@ -26,7 +26,7 @@ public class GetActiveRulesForDateBenchmarks
     private FundingRulesDbContext _dbContext = null!;
     private TableServiceClient _tableServiceClient = null!;
 
-    private List<DateTime> _dates = [
+    private readonly List<DateTime> _dates = [
         DateTime.UtcNow.Date.AddDays(-10).Date,
         DateTime.UtcNow.Date,
         DateTime.UtcNow.Date.AddDays(10).Date
@@ -98,11 +98,6 @@ public class GetActiveRulesForDateBenchmarks
                     FundingRuleId = fundingRuleId,
                     CourseId = Guid.NewGuid().ToString(),
                 })
-                .ToList();
-
-    private static List<FundingRuleCourseAssociationTableEntity> GetTableStorageCourseAssociations(List<FundingRuleCourseAssociationsEntity> sqlCourseAssociations)
-        => sqlCourseAssociations
-                .Select(x => new FundingRuleCourseAssociationTableEntity { PartitionKey = x.FundingRuleId.ToString(), RowKey = x.CourseId })
                 .ToList();
 
     private async Task InitialiseData()
