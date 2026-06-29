@@ -20,9 +20,9 @@ var courses = new List<Course>
     {
         Id = "Course1",
         AgeAtStartOfCourse = 27,
-        StartDate = DateTime.Now.AddMonths(6),
-        EndDate = DateTime.UtcNow.AddMonths(12),
-        PlannedEndDate = DateTime.UtcNow.AddMonths(12),
+        StartDate = DateTime.UtcNow.AddMonths(1),
+        EndDate = DateTime.UtcNow.AddMonths(6),
+        PlannedEndDate = DateTime.UtcNow.AddMonths(6),
         Status = LearnerCourseStatus.InLearning,
         TrainingType = TrainingType.Apprenticeship,
         Type = CourseType.Apprenticeship,
