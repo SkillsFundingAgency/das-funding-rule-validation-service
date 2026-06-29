@@ -60,7 +60,7 @@ public class WhenOrchestratingFundingRulesValidation
             rule.CourseIds = command.Courses.Select(x => x.Id).ToHashSet();
             context
                 .Setup(x => x.CallActivityAsync<RuleOutcome>(rule.RuleName, It.IsAny<RuleData>()))
-                .ReturnsAsync(new RuleOutcome(rule.RuleName, []));
+                .ReturnsAsync(new RuleOutcome(rule.Id, rule.RuleName, []));
         }
 
         ValidateLearnerResult? capturedResult = null;
@@ -111,7 +111,7 @@ public class WhenOrchestratingFundingRulesValidation
             rule.CourseIds = command.Courses.Select(x => x.Id).ToHashSet();
             context
                 .Setup(x => x.CallActivityAsync<RuleOutcome>(rule.RuleName, It.IsAny<RuleData>()))
-                .ReturnsAsync(new RuleOutcome(rule.RuleName, [new FundingRestriction(Guid.NewGuid(), "RuleName", "CourseId", "RestrictionName", "RestrictionType")]));
+                .ReturnsAsync(new RuleOutcome(rule.Id, rule.RuleName, [new FundingRestriction("CourseId", "RestrictionName", "RestrictionType")]));
         }
 
         ValidateLearnerResult? capturedResult = null;

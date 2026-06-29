@@ -27,7 +27,7 @@ public class WhenCheckingAgeForCourse
         var result = CourseAgeCheckActivity.CourseAgeCheck(ruleData, null!);
         
         // assert
-        result.Should().BeEquivalentTo(new RuleOutcome(nameof(CourseAgeCheckActivity.CourseAgeCheck), []));
+        result.Should().BeEquivalentTo(new RuleOutcome(ruleData.Rule.Id, nameof(CourseAgeCheckActivity.CourseAgeCheck), []));
     }
 
     [Test]
