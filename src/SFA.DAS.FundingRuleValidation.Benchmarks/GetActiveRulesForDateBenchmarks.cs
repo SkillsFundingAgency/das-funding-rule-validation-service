@@ -124,6 +124,7 @@ public class GetActiveRulesForDateBenchmarks
             {
                 Id = fundingRuleId,
                 RuleName = $"{nameof(CourseAgeCheckActivity.CourseAgeCheck)}_{index+1}",
+                Enabled = true,
                 EffectiveFrom = pointInTime.AddDays(-Random.Shared.Next(1, 10)).Date,
                 EffectiveTo = pointInTime.AddDays(Random.Shared.Next(1, 10)).Date,
                 Parameters = JsonSerializer.Serialize(new CourseAgeCheckParameters { MinimumAge = 0, MaximumAge = 24 }),
@@ -136,6 +137,7 @@ public class GetActiveRulesForDateBenchmarks
                 PartitionKey = "LOCAL",
                 RowKey = sqlFundingRule.Id.ToString(),
                 RuleName = sqlFundingRule.RuleName,
+                Enabled = true,
                 EffectiveFrom = sqlFundingRule.EffectiveFrom,
                 EffectiveTo = sqlFundingRule.EffectiveTo,
                 Parameters = sqlFundingRule.Parameters,

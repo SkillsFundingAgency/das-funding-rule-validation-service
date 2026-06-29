@@ -4,6 +4,7 @@ public class FundingRuleEntity
 {
     public required Guid Id { get; set; }
     public required string RuleName { get; set; }
+    public required bool Enabled { get; set; }
     public DateTime EffectiveFrom { get; set; }
     public DateTime EffectiveTo { get; set; }
     public string Parameters { get; set; }

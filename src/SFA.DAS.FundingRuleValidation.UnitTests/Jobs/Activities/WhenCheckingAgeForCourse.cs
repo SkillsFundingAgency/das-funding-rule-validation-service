@@ -10,8 +10,7 @@ public class WhenCheckingAgeForCourse
     [Test, MoqAutoData]
     public void Then_When_There_Are_No_Courses_Then_No_Funding_Restrictions_Are_Returned(
         RuleData ruleData,
-        CourseAgeCheckParameters parameters,
-        [Greedy] CourseAgeCheckActivity sut)
+        CourseAgeCheckParameters parameters)
     {
         parameters.MinimumAge = 25;
         parameters.MaximumAge = 26;
@@ -23,9 +22,9 @@ public class WhenCheckingAgeForCourse
                 Courses = []
             }
         };
-        
+
         // act
-        var result = sut.CourseAgeCheck(ruleData, null!);
+        var result = CourseAgeCheckActivity.CourseAgeCheck(ruleData, null!);
         
         // assert
         result.Should().BeEquivalentTo(new RuleOutcome(nameof(CourseAgeCheckActivity.CourseAgeCheck), []));
@@ -41,8 +40,7 @@ public class WhenCheckingAgeForCourse
         int age,
         bool fails,
         RuleData ruleData,
-        CourseAgeCheckParameters parameters,
-        [Greedy] CourseAgeCheckActivity sut)
+        CourseAgeCheckParameters parameters)
     {
         parameters.MinimumAge = 20;
         parameters.MaximumAge = 30;
@@ -57,7 +55,7 @@ public class WhenCheckingAgeForCourse
         };
         
         // act
-        var result = sut.CourseAgeCheck(ruleData, null!);
+        var result = CourseAgeCheckActivity.CourseAgeCheck(ruleData, null!);
         
         // assert
         result.FundingRestrictions.Any().Should().Be(fails);
@@ -66,8 +64,7 @@ public class WhenCheckingAgeForCourse
     [Test, MoqAutoData]
     public void Then_Multiple_Courses_Can_Be_Tested_Against_The_Rule(
         RuleData ruleData,
-        CourseAgeCheckParameters parameters,
-        [Greedy] CourseAgeCheckActivity sut)
+        CourseAgeCheckParameters parameters)
     {
         parameters.MinimumAge = 20;
         parameters.MaximumAge = 30;
@@ -85,7 +82,7 @@ public class WhenCheckingAgeForCourse
         };
         
         // act
-        var result = sut.CourseAgeCheck(ruleData, null!);
+        var result = CourseAgeCheckActivity.CourseAgeCheck(ruleData, null!);
         
         // assert
         result.FundingRestrictions.Should().HaveCount(2);

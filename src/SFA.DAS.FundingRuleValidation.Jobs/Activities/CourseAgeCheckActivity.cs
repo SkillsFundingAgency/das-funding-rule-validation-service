@@ -5,10 +5,10 @@ using SFA.DAS.FundingRuleValidation.Jobs.Domain;
 
 namespace SFA.DAS.FundingRuleValidation.Jobs.Activities;
 
-public class CourseAgeCheckActivity
+public static class CourseAgeCheckActivity
 {
     [Function(nameof(CourseAgeCheck))]
-    public RuleOutcome CourseAgeCheck([ActivityTrigger] RuleData ruleData, FunctionContext executionContext)
+    public static RuleOutcome CourseAgeCheck([ActivityTrigger] RuleData ruleData, FunctionContext executionContext)
     {
         var parameters = JsonSerializer.Deserialize<CourseAgeCheckParameters>(ruleData.Rule.Parameters)!;
         var fundingRestrictions = ruleData.Command.Courses

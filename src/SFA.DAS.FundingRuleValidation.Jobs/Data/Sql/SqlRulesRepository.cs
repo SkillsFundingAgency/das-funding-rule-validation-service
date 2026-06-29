@@ -11,6 +11,7 @@ public class SqlRulesRepository(IFundingRulesDataContext dbContext): IRulesRepos
             .FundingRules
             .Include(x => x.CourseAssociations).AsQueryable();
 
+        query = query.Where(x => x.Enabled);
         query = dates.Aggregate(query, (current, date) => current.Where(x => x.EffectiveFrom <= date && x.EffectiveTo >= date));
 
         var rules = await query.ToListAsync(cancellationToken);
