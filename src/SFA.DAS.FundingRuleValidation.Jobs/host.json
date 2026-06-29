@@ -14,5 +14,10 @@
             "Host": "Information",
             "Function": "Information"
         }
+    },
+    "extensions": {
+        "serviceBus": {
+            "autoCompleteMessages": true
+        }
     }
 }
