@@ -1,4 +1,4 @@
-﻿namespace SFA.DAS.FundingRuleValidation.Jobs.Activities.Config;
+﻿namespace SFA.DAS.FundingRuleValidation.Jobs.Activities.Models;
 
 public class CourseAgeCheckParameters
 {

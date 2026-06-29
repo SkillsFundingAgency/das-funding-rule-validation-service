@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 using SFA.DAS.FundingRuleValidation.Jobs.Activities;
-using SFA.DAS.FundingRuleValidation.Jobs.Activities.Config;
+using SFA.DAS.FundingRuleValidation.Jobs.Activities.Models;
 using SFA.DAS.FundingRuleValidation.Jobs.Domain;
 
 namespace SFA.DAS.FundingRuleValidation.UnitTests.Jobs.Activities;

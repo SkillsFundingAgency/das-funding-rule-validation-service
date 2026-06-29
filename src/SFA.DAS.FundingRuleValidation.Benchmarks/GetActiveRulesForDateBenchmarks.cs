@@ -6,7 +6,7 @@ using BenchmarkDotNet.Order;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using SFA.DAS.FundingRuleValidation.Jobs.Activities;
-using SFA.DAS.FundingRuleValidation.Jobs.Activities.Config;
+using SFA.DAS.FundingRuleValidation.Jobs.Activities.Models;
 using SFA.DAS.FundingRuleValidation.Jobs.Core;
 using SFA.DAS.FundingRuleValidation.Jobs.Data.Sql;
 using SFA.DAS.FundingRuleValidation.Jobs.Data.TableStorage;
