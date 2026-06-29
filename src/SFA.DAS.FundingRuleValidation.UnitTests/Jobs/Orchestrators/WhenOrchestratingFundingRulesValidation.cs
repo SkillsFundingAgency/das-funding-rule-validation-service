@@ -138,4 +138,55 @@ public class WhenOrchestratingFundingRulesValidation
         var fundingRestrictions = capturedResult.RuleOutcomes.SelectMany(x => x.FundingRestrictions);
         fundingRestrictions.Should().HaveCount(3);
     }
+    
+    [Test, MoqAutoData]
+    public async Task Then_Failed_Activity_Invocations_Are_Caught_And_Do_Not_Fail_The_Evaluation_Process(
+        List<FundingRule> rules,
+        Course course,
+        Mock<TaskOrchestrationContext> context)
+    {
+        // arrange
+        var ruleNames = rules.Select(x => x.RuleName).ToHashSet();
+        course.StartDate = DateTime.UtcNow;
+        var command = new ValidateLearnerCommand(Guid.NewGuid(), 123456789, 987654321, [course]);
+        
+        context
+            .Setup(x => x.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDatesActivity), It.IsAny<List<DateTime>>()))
+            .ReturnsAsync(rules);
+    
+        context
+            .Setup(x => x.GetInput<ValidateLearnerCommand>())
+            .Returns(command);
+    
+        foreach (var rule in rules)
+        {
+            rule.EffectiveFrom = DateTime.UtcNow.AddDays(-10);
+            rule.EffectiveTo = DateTime.UtcNow.AddDays(10);
+            rule.CourseIds = command.Courses.Select(x => x.Id).ToHashSet();
+            context
+                .Setup(x => x.CallActivityAsync<RuleOutcome>(rule.RuleName, It.IsAny<RuleData>()))
+                .ThrowsAsync(new TaskFailedException(rule.RuleName, 100, new Exception("Failed to run activity")));
+        }
+
+        ValidateLearnerResult? capturedResult = null;
+        context
+            .Setup(x => x.CallActivityAsync(nameof(SendValidationResultActivity), It.IsAny<object?>(), It.IsAny<TaskOptions?>()))
+            .Callback<TaskName, object?, TaskOptions?>((_, x, _) => capturedResult = x as ValidateLearnerResult)
+            .Returns(Task.CompletedTask);
+    
+        // act
+        await FundingRuleOrchestrator.ApplyFundingRules(context.Object);
+    
+        // assert
+        capturedResult.Should().NotBeNull();
+        capturedResult!.CorrelationId.Should().Be(command.CorrelationId);
+        capturedResult.Ukprn.Should().Be(command.Ukprn);
+        capturedResult.Uln.Should().Be(command.Uln);
+        capturedResult.Status.Should().Be(ValidationStatus.Success);
+        capturedResult.RuleOutcomes.Should().HaveCount(3);
+        capturedResult.RuleOutcomes.Should().AllSatisfy(x =>
+        {
+            ruleNames.Contains(x.RuleName).Should().BeTrue();
+        });
+    }
 }

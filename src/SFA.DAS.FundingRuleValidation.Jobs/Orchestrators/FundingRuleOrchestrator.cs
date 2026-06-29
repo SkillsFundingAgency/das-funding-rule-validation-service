@@ -48,7 +48,15 @@ public class FundingRuleOrchestrator
             var ruleCommand = command with { Courses = courses };
             
             logger.LogInformation("{InstanceId}: Calling {RuleName}", context.InstanceId, rule.RuleName);
-            outputs.Add(await context.CallActivityAsync<RuleOutcome>(rule.RuleName, new RuleData(rule, ruleCommand))); 
+            try
+            {
+                outputs.Add(await context.CallActivityAsync<RuleOutcome>(rule.RuleName, new RuleData(rule, ruleCommand)));
+            }
+            catch (TaskFailedException ex)
+            {
+                logger.LogError(ex, "{InstanceId}: Error calling {RuleName}, make sure the rule name is a valid Activity", context.InstanceId, rule.RuleName);
+                outputs.Add(new RuleOutcome(rule.Id, rule.RuleName, []));
+            }
         }
 
         var status = outputs.SelectMany(x => x.FundingRestrictions).Any()
