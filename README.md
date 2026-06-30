@@ -72,7 +72,7 @@ Data:
 * NUnit
 * Moq
 * FluentAssertions
-```
+
 
 ## 🐛 Known Issues
 
