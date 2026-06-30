@@ -10,22 +10,21 @@ namespace SFA.DAS.FundingRuleValidation.Jobs.Endpoints;
 
 public class FundingRuleHttpEndpoint
 {
-    [Function(nameof(FundingRuleTrigger))]
-    public static async Task<HttpResponseData> FundingRuleTrigger(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = "fundingRules/{learnerId:guid}")] HttpRequestData req,
-        [FromBody] IndividualisedLearnerRecord? ilr,
-        Guid learnerId,
+    [Function(nameof(FundingRuleHttpTrigger))]
+    public static async Task<HttpResponseData> FundingRuleHttpTrigger(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = "fundingRules")] HttpRequestData req,
+        [FromBody] ValidateLearnerCommand? command,
         [DurableClient] DurableTaskClient client,
         FunctionContext executionContext)
     {
         var logger = executionContext.GetLogger<FundingRuleHttpEndpoint>();
-        if (ilr is null)
+        if (command is null)
         {
             return req.CreateResponse(HttpStatusCode.BadRequest);
         }
         
-        var instanceId = await client.ScheduleNewOrchestrationInstanceAsync(nameof(FundingRuleOrchestrator.ApplyFundingRules), new LearnerData(learnerId, ilr));
-        logger.LogInformation("{instanceId}: Started orchestration for learner '{learnerId}'.", instanceId, learnerId);
+        var instanceId = await client.ScheduleNewOrchestrationInstanceAsync(nameof(FundingRuleOrchestrator.ApplyFundingRules), command);
+        logger.LogInformation("{InstanceId}: Started orchestration for correlated message '{CorrelationId}'", instanceId, command.CorrelationId);
         return await client.CreateCheckStatusResponseAsync(req, instanceId);
     }
 }

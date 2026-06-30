@@ -9,16 +9,20 @@ public static class DomainMappers
             return new Domain.FundingRule
             {
                 Id = entity.Id,
-                RuleName = entity.RuleName
+                RuleName = entity.RuleName,
+                EffectiveFrom = entity.EffectiveFrom,
+                EffectiveTo = entity.EffectiveTo,
+                Parameters = entity.Parameters,
+                CourseIds = entity.CourseAssociations.Select(x => x.CourseId).ToHashSet()
             };
         }
     }
     
     extension(IEnumerable<FundingRuleEntity> entities)
     {
-        public IEnumerable<Domain.FundingRule> ToDomain()
+        public List<Domain.FundingRule> ToDomain()
         {
-            return entities.Select(x => x.ToDomain());
+            return entities.Select(x => x.ToDomain()).ToList();
         }
     }
 }

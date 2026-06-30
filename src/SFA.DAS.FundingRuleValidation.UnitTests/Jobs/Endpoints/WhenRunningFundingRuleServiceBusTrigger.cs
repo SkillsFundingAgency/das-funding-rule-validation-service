@@ -1,5 +1,7 @@
-﻿using System.Net;
+﻿using System.Text;
+using System.Text.Json;
 using Azure.Core.Serialization;
+using Azure.Messaging.ServiceBus;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.DurableTask;
 using Microsoft.DurableTask.Client;
@@ -11,30 +13,25 @@ using SFA.DAS.FundingRuleValidation.Jobs.Orchestrators;
 
 namespace SFA.DAS.FundingRuleValidation.UnitTests.Jobs.Endpoints;
 
-public class WhenRunningFundingRuleTrigger
+public class WhenRunningFundingRuleServiceBusTrigger
 {
     [Test, MoqAutoData]
-    public async Task Then_BadRequest_Is_Returned_If_No_Ilr_Is_Submitted(Mock<FunctionContext> fakeContext)
+    public async Task Then_Exception_Is_Thrown_If_Invalid_Message_Is_Received(Mock<FunctionContext> fakeContext)
     {
         // arrange
-        fakeContext
-            .Setup(x => x.InstanceServices.GetService(typeof(ILogger<FundingRuleHttpEndpoint>)))
-            .Returns(new Mock<ILogger<FundingRuleHttpEndpoint>>().Object);
-        
-        var fakeHttpRequestData = new FakeHttpRequestData(fakeContext.Object);
+        var message = ServiceBusModelFactory.ServiceBusReceivedMessage(new BinaryData("{}"u8.ToArray()));
 
         // act
-        var result = await FundingRuleHttpEndpoint.FundingRuleTrigger(fakeHttpRequestData, null, Guid.NewGuid(), null!, fakeContext.Object);
+        var action = async () => await FundingRuleServiceBusEndpoint.FundingRuleServiceBusTrigger(message, null!, fakeContext.Object);
 
         // assert
-        result.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await action.Should().ThrowAsync<InvalidOperationException>();
     }
     
     [Test, MoqAutoData]
     public async Task Then_A_New_Funding_Rules_Orchestration_Is_Scheduled(
-        Guid learnerId,
         string instanceId,
-        IndividualisedLearnerRecord ilr,
+        ValidateLearnerCommand command,
         Mock<FunctionContext> functionContext,
         Mock<DurableTaskClient> durableClient,
         Mock<IOptions<WorkerOptions>> workerOptions,
@@ -42,11 +39,11 @@ public class WhenRunningFundingRuleTrigger
     {
         // arrange
         functionContext
-            .Setup(x => x.InstanceServices.GetService(typeof(ILogger<FundingRuleHttpEndpoint>)))
-            .Returns(new Mock<ILogger<FundingRuleHttpEndpoint>>().Object);
+            .Setup(x => x.InstanceServices.GetService(typeof(ILogger<FundingRuleServiceBusEndpoint>)))
+            .Returns(new Mock<ILogger<FundingRuleServiceBusEndpoint>>().Object);
 
         string? capturedTaskName = null;
-        LearnerData? capturedLearnerData = null;
+        ValidateLearnerCommand? capturedCommand = null;
         durableClient
             .Setup(x => x.ScheduleNewOrchestrationInstanceAsync(
                 It.IsAny<TaskName>(),
@@ -56,7 +53,7 @@ public class WhenRunningFundingRuleTrigger
             .Callback<TaskName, object?, StartOrchestrationOptions, CancellationToken>((taskName, data, _, _) =>
             {
                 capturedTaskName = taskName.Name;
-                capturedLearnerData = data as LearnerData;
+                capturedCommand = data as ValidateLearnerCommand;
             })
             .ReturnsAsync(instanceId);
 
@@ -68,16 +65,14 @@ public class WhenRunningFundingRuleTrigger
             .Setup(x => x.InstanceServices.GetService(typeof(IOptions<WorkerOptions>)))
             .Returns(workerOptions.Object);
         
-        var fakeHttpRequestData = new FakeHttpRequestData(functionContext.Object);
+        var message = ServiceBusModelFactory.ServiceBusReceivedMessage(new BinaryData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(command))));
         
         // act
-        var result = await FundingRuleHttpEndpoint.FundingRuleTrigger(fakeHttpRequestData, ilr, learnerId, durableClient.Object, functionContext.Object);
+        await FundingRuleServiceBusEndpoint.FundingRuleServiceBusTrigger(message, durableClient.Object, functionContext.Object);
 
         // assert
-        result.StatusCode.Should().Be(HttpStatusCode.Accepted);
         capturedTaskName.Should().Be(nameof(FundingRuleOrchestrator.ApplyFundingRules));
-        capturedLearnerData.Should().NotBeNull();
-        capturedLearnerData.Id.Should().Be(learnerId);
-        capturedLearnerData.Ilr.Should().Be(ilr);
+        capturedCommand.Should().NotBeNull();
+        capturedCommand.Should().BeEquivalentTo(command);
     }
 }
