@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "SFA.DAS.FundingRuleValidation.Jobs": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7277",
+      "launchBrowser": false
+    }
+  }
+}

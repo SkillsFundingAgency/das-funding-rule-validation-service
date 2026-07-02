@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SFA.DAS.FundingRuleValidation.Jobs", "SFA.DAS.FundingRuleValidation.Jobs/SFA.DAS.FundingRuleValidation.Jobs.csproj", "{9701DD39-3264-4055-968B-747AED82E6DA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SFA.DAS.FundingRuleValidation.UnitTests", "SFA.DAS.FundingRuleValidation.UnitTests\SFA.DAS.FundingRuleValidation.UnitTests.csproj", "{C6E8878B-F142-41CC-BAC0-6A2B44C2B246}"
+EndProject
+Project("{42EA0DBD-9CF1-443E-919E-BE9C484E4577}") = "SFA.DAS.FundingRuleValidation.Jobs.Database", "SFA.DAS.FundingRuleValidation.Jobs.Database\SFA.DAS.FundingRuleValidation.Jobs.Database.sqlproj", "{BA5BFAB9-A6AF-419F-80F2-0CC66CCF0C59}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SFA.DAS.FundingRuleValidation.Benchmarks", "SFA.DAS.FundingRuleValidation.Benchmarks\SFA.DAS.FundingRuleValidation.Benchmarks.csproj", "{A5B3D19A-4202-435D-BB9D-76AFF423B28B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9701DD39-3264-4055-968B-747AED82E6DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9701DD39-3264-4055-968B-747AED82E6DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9701DD39-3264-4055-968B-747AED82E6DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9701DD39-3264-4055-968B-747AED82E6DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C6E8878B-F142-41CC-BAC0-6A2B44C2B246}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C6E8878B-F142-41CC-BAC0-6A2B44C2B246}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C6E8878B-F142-41CC-BAC0-6A2B44C2B246}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C6E8878B-F142-41CC-BAC0-6A2B44C2B246}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA5BFAB9-A6AF-419F-80F2-0CC66CCF0C59}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA5BFAB9-A6AF-419F-80F2-0CC66CCF0C59}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA5BFAB9-A6AF-419F-80F2-0CC66CCF0C59}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA5BFAB9-A6AF-419F-80F2-0CC66CCF0C59}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5B3D19A-4202-435D-BB9D-76AFF423B28B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5B3D19A-4202-435D-BB9D-76AFF423B28B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5B3D19A-4202-435D-BB9D-76AFF423B28B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5B3D19A-4202-435D-BB9D-76AFF423B28B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
