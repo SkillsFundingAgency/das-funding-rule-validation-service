@@ -11,7 +11,7 @@ public class WhenOrchestratingFundingRulesValidation
     public async Task Then_When_There_Are_No_Rules_The_Request_Passes_Validation(Mock<TaskOrchestrationContext> context)
     {
         // arrange
-        var command = new ValidateLearnerCommand(Guid.NewGuid(), 123456789, 987654321, []);
+        var command = new ValidateLearnerCommand(Guid.NewGuid().ToString(), 123456789, 987654321, []);
         
         context
             .Setup(x => x.GetInput<ValidateLearnerCommand>())
@@ -43,7 +43,7 @@ public class WhenOrchestratingFundingRulesValidation
         // arrange
         var ruleNames = rules.Select(x => x.RuleName).ToHashSet();
         course.StartDate = DateTime.UtcNow;
-        var command = new ValidateLearnerCommand(Guid.NewGuid(), 123456789, 987654321, [course]);
+        var command = new ValidateLearnerCommand(Guid.NewGuid().ToString(), 123456789, 987654321, [course]);
         
         context
             .Setup(x => x.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDatesActivity), It.IsAny<List<DateTime>>()))
@@ -94,7 +94,7 @@ public class WhenOrchestratingFundingRulesValidation
         // arrange
         var ruleNames = rules.Select(x => x.RuleName).ToHashSet();
         course.StartDate = DateTime.UtcNow;
-        var command = new ValidateLearnerCommand(Guid.NewGuid(), 123456789, 987654321, [course]);
+        var command = new ValidateLearnerCommand(Guid.NewGuid().ToString(), 123456789, 987654321, [course]);
         
         context
             .Setup(x => x.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDatesActivity), It.IsAny<List<DateTime>>()))
@@ -148,7 +148,7 @@ public class WhenOrchestratingFundingRulesValidation
         // arrange
         var ruleNames = rules.Select(x => x.RuleName).ToHashSet();
         course.StartDate = DateTime.UtcNow;
-        var command = new ValidateLearnerCommand(Guid.NewGuid(), 123456789, 987654321, [course]);
+        var command = new ValidateLearnerCommand(Guid.NewGuid().ToString(), 123456789, 987654321, [course]);
         
         context
             .Setup(x => x.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDatesActivity), It.IsAny<List<DateTime>>()))

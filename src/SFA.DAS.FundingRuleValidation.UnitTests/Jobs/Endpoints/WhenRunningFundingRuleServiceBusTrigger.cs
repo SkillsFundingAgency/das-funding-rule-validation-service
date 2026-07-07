@@ -19,7 +19,7 @@ public class WhenRunningFundingRuleServiceBusTrigger
     public async Task Then_Exception_Is_Thrown_If_Invalid_Message_Is_Received(Mock<FunctionContext> fakeContext)
     {
         // arrange
-        var message = ServiceBusModelFactory.ServiceBusReceivedMessage(new BinaryData("{}"u8.ToArray()));
+        var message = ServiceBusModelFactory.ServiceBusReceivedMessage();
 
         // act
         var action = async () => await FundingRuleServiceBusEndpoint.FundingRuleServiceBusTrigger(message, null!, fakeContext.Object);

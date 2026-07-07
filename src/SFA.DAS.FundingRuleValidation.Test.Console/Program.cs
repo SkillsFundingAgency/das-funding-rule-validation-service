@@ -29,7 +29,7 @@ var courses = new List<Course>
     }
 };
 
-var command = new ValidateLearnerCommand(Guid.NewGuid(), ukprn, uln, courses);
+var command = new ValidateLearnerCommand(Guid.NewGuid().ToString(), ukprn, uln, courses);
 
 var cts = new CancellationTokenSource();
 var token = cts.Token;
