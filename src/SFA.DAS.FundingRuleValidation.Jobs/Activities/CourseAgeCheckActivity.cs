@@ -13,7 +13,7 @@ public static class CourseAgeCheckActivity
         var parameters = JsonSerializer.Deserialize<CourseAgeCheckParameters>(ruleData.Rule.Parameters)!;
         var fundingRestrictions = ruleData.Command.Courses
             .Where(x => parameters.MinimumAge > x.AgeAtStartOfCourse || x.AgeAtStartOfCourse > parameters.MaximumAge)
-            .Select(x => new FundingRestriction(x.Id, nameof(Course.AgeAtStartOfCourse), x.AgeAtStartOfCourse.ToString()))
+            .Select(x => new FundingRestriction(x.Id, x.AimSequenceNumber, nameof(Course.AgeAtStartOfCourse), x.AgeAtStartOfCourse.ToString()))
             .ToList();
         
         return new RuleOutcome(ruleData.Rule.Id, ruleData.Rule.IlrRuleName, fundingRestrictions);

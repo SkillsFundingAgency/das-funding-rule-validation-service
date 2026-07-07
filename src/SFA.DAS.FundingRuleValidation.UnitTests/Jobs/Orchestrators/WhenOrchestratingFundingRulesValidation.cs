@@ -111,7 +111,7 @@ public class WhenOrchestratingFundingRulesValidation
             rule.CourseIds = command.Courses.Select(x => x.Id).ToHashSet();
             context
                 .Setup(x => x.CallActivityAsync<RuleOutcome>(rule.RuleName, It.IsAny<RuleData>()))
-                .ReturnsAsync(new RuleOutcome(rule.Id, rule.IlrRuleName, [new FundingRestriction("CourseId", "RestrictionName", "RestrictionType")]));
+                .ReturnsAsync(new RuleOutcome(rule.Id, rule.IlrRuleName, [new FundingRestriction("CourseId", 333, "RestrictionName", "RestrictionType")]));
         }
 
         ValidateLearnerResult? capturedResult = null;
