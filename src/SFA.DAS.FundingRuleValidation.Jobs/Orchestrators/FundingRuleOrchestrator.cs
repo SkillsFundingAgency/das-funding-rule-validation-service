@@ -55,7 +55,7 @@ public class FundingRuleOrchestrator
             catch (TaskFailedException ex)
             {
                 logger.LogError(ex, "{InstanceId}: Error calling {RuleName}, make sure the rule name is a valid Activity", context.InstanceId, rule.RuleName);
-                outputs.Add(new RuleOutcome(rule.Id, rule.RuleName, []));
+                outputs.Add(new RuleOutcome(rule.Id, rule.IlrRuleName, []));
             }
         }
 

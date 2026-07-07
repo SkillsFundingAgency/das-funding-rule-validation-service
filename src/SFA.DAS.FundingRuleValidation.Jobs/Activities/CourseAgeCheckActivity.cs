@@ -16,6 +16,6 @@ public static class CourseAgeCheckActivity
             .Select(x => new FundingRestriction(x.Id, nameof(Course.AgeAtStartOfCourse), x.AgeAtStartOfCourse.ToString()))
             .ToList();
         
-        return new RuleOutcome(ruleData.Rule.Id, nameof(CourseAgeCheckActivity), fundingRestrictions);
+        return new RuleOutcome(ruleData.Rule.Id, ruleData.Rule.IlrRuleName, fundingRestrictions);
     } 
 }

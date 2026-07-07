@@ -10,6 +10,7 @@ public static class DomainMappers
             {
                 Id = entity.Id,
                 RuleName = entity.RuleName,
+                IlrRuleName = entity.IlrRuleName,
                 EffectiveFrom = entity.EffectiveFrom,
                 EffectiveTo = entity.EffectiveTo,
                 Parameters = entity.Parameters,

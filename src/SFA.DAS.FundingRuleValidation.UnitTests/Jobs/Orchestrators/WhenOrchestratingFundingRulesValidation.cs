@@ -41,7 +41,7 @@ public class WhenOrchestratingFundingRulesValidation
         Mock<TaskOrchestrationContext> context)
     {
         // arrange
-        var ruleNames = rules.Select(x => x.RuleName).ToHashSet();
+        var ruleNames = rules.Select(x => x.IlrRuleName).ToHashSet();
         course.StartDate = DateTime.UtcNow;
         var command = new ValidateLearnerCommand(Guid.NewGuid().ToString(), 123456789, 987654321, [course]);
         
@@ -60,7 +60,7 @@ public class WhenOrchestratingFundingRulesValidation
             rule.CourseIds = command.Courses.Select(x => x.Id).ToHashSet();
             context
                 .Setup(x => x.CallActivityAsync<RuleOutcome>(rule.RuleName, It.IsAny<RuleData>()))
-                .ReturnsAsync(new RuleOutcome(rule.Id, rule.RuleName, []));
+                .ReturnsAsync(new RuleOutcome(rule.Id, rule.IlrRuleName, []));
         }
 
         ValidateLearnerResult? capturedResult = null;
@@ -92,7 +92,7 @@ public class WhenOrchestratingFundingRulesValidation
         Mock<TaskOrchestrationContext> context)
     {
         // arrange
-        var ruleNames = rules.Select(x => x.RuleName).ToHashSet();
+        var ruleNames = rules.Select(x => x.IlrRuleName).ToHashSet();
         course.StartDate = DateTime.UtcNow;
         var command = new ValidateLearnerCommand(Guid.NewGuid().ToString(), 123456789, 987654321, [course]);
         
@@ -111,7 +111,7 @@ public class WhenOrchestratingFundingRulesValidation
             rule.CourseIds = command.Courses.Select(x => x.Id).ToHashSet();
             context
                 .Setup(x => x.CallActivityAsync<RuleOutcome>(rule.RuleName, It.IsAny<RuleData>()))
-                .ReturnsAsync(new RuleOutcome(rule.Id, rule.RuleName, [new FundingRestriction("CourseId", "RestrictionName", "RestrictionType")]));
+                .ReturnsAsync(new RuleOutcome(rule.Id, rule.IlrRuleName, [new FundingRestriction("CourseId", "RestrictionName", "RestrictionType")]));
         }
 
         ValidateLearnerResult? capturedResult = null;
@@ -146,7 +146,7 @@ public class WhenOrchestratingFundingRulesValidation
         Mock<TaskOrchestrationContext> context)
     {
         // arrange
-        var ruleNames = rules.Select(x => x.RuleName).ToHashSet();
+        var ruleNames = rules.Select(x => x.IlrRuleName).ToHashSet();
         course.StartDate = DateTime.UtcNow;
         var command = new ValidateLearnerCommand(Guid.NewGuid().ToString(), 123456789, 987654321, [course]);
         
