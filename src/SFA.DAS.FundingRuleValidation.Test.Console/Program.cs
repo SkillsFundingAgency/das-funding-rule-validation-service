@@ -12,15 +12,15 @@ await using var client = new ServiceBusClient(connectionString);
 await using var sender = client.CreateSender(GlobalConstants.IncomingQueueName);
 await using var receiver = client.CreateReceiver(GlobalConstants.OutgoingQueueName);
 
-const long ukprn = 10000;
-const long uln = 1234567890;
+const string ukprn = "10000";
+const string uln = "1234567890";
 var courses = new List<Course>
 {
     new()
     {
-        Id = "Course1",
+        Id = "090D5B59-3839-49CE-8A32-038A312B1F4A",
         AgeAtStartOfCourse = 27,
-        StartDate = DateTime.UtcNow.AddMonths(1),
+        StartDate = new DateTime(2026, 5, 31),
         EndDate = DateTime.UtcNow.AddMonths(6),
         PlannedEndDate = DateTime.UtcNow.AddMonths(6),
         Status = LearnerCourseStatus.InLearning,
