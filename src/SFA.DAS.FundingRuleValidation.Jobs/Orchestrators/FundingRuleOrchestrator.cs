@@ -22,7 +22,7 @@ public class FundingRuleOrchestrator
         
         if (rules is { Count: 0 })
         {
-            logger.LogInformation("{InstanceId}: No rules found", context.InstanceId);
+            logger.LogInformation("{CorrelationId}-{InstanceId}: No rules found", command.CorrelationId, context.InstanceId);
             result = new ValidateLearnerResult(command.CorrelationId, command.Ukprn, command.Uln, ValidationStatus.Success, []);
             await context.CallActivityAsync(nameof(SendValidationResultActivity), result);
             return;
@@ -47,14 +47,14 @@ public class FundingRuleOrchestrator
             // send only the applicable data
             var ruleCommand = command with { Courses = courses };
             
-            logger.LogInformation("{InstanceId}: Calling {RuleName}", context.InstanceId, rule.RuleName);
+            logger.LogInformation("{CorrelationId}-{InstanceId}: Calling {RuleName}", command.CorrelationId, context.InstanceId, rule.RuleName);
             try
             {
                 outputs.Add(await context.CallActivityAsync<RuleOutcome>(rule.RuleName, new RuleData(rule, ruleCommand)));
             }
             catch (TaskFailedException ex)
             {
-                logger.LogError(ex, "{InstanceId}: Error calling {RuleName}, make sure the rule name is a valid Activity", context.InstanceId, rule.RuleName);
+                logger.LogError(ex, "{CorrelationId}-{InstanceId}: Error calling {RuleName}, make sure the rule name is a valid Activity", command.CorrelationId, context.InstanceId, rule.RuleName);
                 outputs.Add(new RuleOutcome(rule.Id, rule.IlrRuleName, []));
             }
         }
@@ -64,5 +64,6 @@ public class FundingRuleOrchestrator
             : ValidationStatus.Success;
         result = new ValidateLearnerResult(command.CorrelationId, command.Ukprn, command.Uln, status, outputs);
         await context.CallActivityAsync(nameof(SendValidationResultActivity), result);
+        logger.LogInformation("{CorrelationId}-{InstanceId}: Validation complete", command.CorrelationId, context.InstanceId);
     }
 }

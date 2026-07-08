@@ -17,7 +17,7 @@ public class FundingRuleServiceBusEndpoint
         [DurableClient] DurableTaskClient client,
         FunctionContext executionContext)
     {
-        ValidateLearnerCommand? command = null;
+        ValidateLearnerCommand? command;
         try
         {
             command = JsonSerializer.Deserialize<ValidateLearnerCommand>(message.Body);
@@ -29,6 +29,6 @@ public class FundingRuleServiceBusEndpoint
 
         var logger = executionContext.GetLogger<FundingRuleServiceBusEndpoint>();
         var instanceId = await client.ScheduleNewOrchestrationInstanceAsync(nameof(FundingRuleOrchestrator.ApplyFundingRules), command);
-        logger.LogInformation("{InstanceId}: Started orchestration for correlated message '{CorrelationId}'", instanceId, command?.CorrelationId);
+        logger.LogInformation("{CorrelationId}-{InstanceId}: Started orchestration", command?.CorrelationId, instanceId);
     }
 }
