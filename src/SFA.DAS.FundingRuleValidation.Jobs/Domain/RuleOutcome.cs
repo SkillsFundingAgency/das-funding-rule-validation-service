@@ -1,3 +1,11 @@
-﻿namespace SFA.DAS.FundingRuleValidation.Jobs.Domain;
+﻿using System.Text.Json.Serialization;
 
-public record RuleOutcome(Guid RuleId, string RuleName, IEnumerable<FundingRestriction> FundingRestrictions);
+namespace SFA.DAS.FundingRuleValidation.Jobs.Domain;
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum RuleOutcome
+{
+    Error,
+    Success,
+    Warning,
+}

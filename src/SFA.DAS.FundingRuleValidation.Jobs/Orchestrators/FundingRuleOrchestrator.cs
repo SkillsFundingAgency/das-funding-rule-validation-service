@@ -23,12 +23,12 @@ public class FundingRuleOrchestrator
         if (rules is { Count: 0 })
         {
             logger.LogInformation("{CorrelationId}-{InstanceId}: No rules found", command.CorrelationId, context.InstanceId);
-            result = new ValidateLearnerResult(command.CorrelationId, command.Ukprn, command.Uln, ValidationStatus.Success, []);
+            result = new ValidateLearnerResult(command.CorrelationId, command.Ukprn, command.Uln, ValidationStatus.Passed, []);
             await context.CallActivityAsync(nameof(SendValidationResultActivity), result);
             return;
         }
 
-        var outputs = new List<RuleOutcome>();
+        var outputs = new List<RuleCourseOutcome>();
         foreach (var rule in rules)
         {
             // get only the courses for the rule
@@ -46,22 +46,26 @@ public class FundingRuleOrchestrator
             
             // send only the applicable data
             var ruleCommand = command with { Courses = courses };
-            
-            logger.LogInformation("{CorrelationId}-{InstanceId}: Calling {RuleName}", command.CorrelationId, context.InstanceId, rule.RuleName);
+           
+            logger.LogInformation("{CorrelationId}-{InstanceId}: Calling {RuleName} with courses: {Courses}", command.CorrelationId, context.InstanceId, rule.RuleName, courses.Select(x => x.Id));
             try
             {
-                outputs.Add(await context.CallActivityAsync<RuleOutcome>(rule.RuleName, new RuleData(rule, ruleCommand)));
+                var outcomes = await context.CallActivityAsync<List<RuleCourseOutcome>>(rule.RuleName, new RuleData(rule, ruleCommand));
+                if (outcomes is { Count: > 0 })
+                {
+                    outputs.AddRange(outcomes);
+                }
             }
             catch (TaskFailedException ex)
             {
                 logger.LogError(ex, "{CorrelationId}-{InstanceId}: Error calling {RuleName}, make sure the rule name is a valid Activity", command.CorrelationId, context.InstanceId, rule.RuleName);
-                outputs.Add(new RuleOutcome(rule.Id, rule.IlrRuleName, []));
+                outputs.AddRange(courses.Select(x => new RuleCourseOutcome(rule.Id, rule.IlrRuleName, x.Id, x.AimSequenceNumber, RuleOutcome.Error, [FundingRestriction.Unknown])));
             }
         }
 
-        var status = outputs.SelectMany(x => x.FundingRestrictions).Any()
-            ? ValidationStatus.Error
-            : ValidationStatus.Success;
+        var status = outputs.All(x => x.Outcome == RuleOutcome.Success)
+            ? ValidationStatus.Passed
+            : ValidationStatus.Failed;
         result = new ValidateLearnerResult(command.CorrelationId, command.Ukprn, command.Uln, status, outputs);
         await context.CallActivityAsync(nameof(SendValidationResultActivity), result);
         logger.LogInformation("{CorrelationId}-{InstanceId}: Validation complete", command.CorrelationId, context.InstanceId);

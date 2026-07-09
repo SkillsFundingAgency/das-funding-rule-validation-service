@@ -27,18 +27,18 @@ public class WhenCheckingAgeForCourse
         var result = CourseAgeCheckActivity.Run(ruleData, null!);
         
         // assert
-        result.Should().BeEquivalentTo(new RuleOutcome(ruleData.Rule.Id, ruleData.Rule.IlrRuleName, []));
+        result.Should().BeEmpty();
     }
 
     [Test]
-    [MoqInlineAutoData(19, true)]
-    [MoqInlineAutoData(20, false)]
-    [MoqInlineAutoData(25, false)]
-    [MoqInlineAutoData(30, false)]
-    [MoqInlineAutoData(31, true)]
+    [MoqInlineAutoData(19, RuleOutcome.Error)]
+    [MoqInlineAutoData(20, RuleOutcome.Success)]
+    [MoqInlineAutoData(25, RuleOutcome.Success)]
+    [MoqInlineAutoData(30, RuleOutcome.Success)]
+    [MoqInlineAutoData(31, RuleOutcome.Error)]
     public void Then_If_The_Learner_Is_The_Correct_Age_It_Passes(
         int age,
-        bool fails,
+        RuleOutcome ruleOutcome,
         RuleData ruleData,
         CourseAgeCheckParameters parameters)
     {
@@ -50,7 +50,7 @@ public class WhenCheckingAgeForCourse
         {
             Command = ruleData.Command with
             {
-                Courses = [new Course { Id = "Course1", AgeAtStartOfCourse = age, }]
+                Courses = [new Course { Id = "Course1", AimSequenceNumber = 3, AgeAtStartOfCourse = age, }]
             }
         };
         
@@ -58,7 +58,14 @@ public class WhenCheckingAgeForCourse
         var result = CourseAgeCheckActivity.Run(ruleData, null!);
         
         // assert
-        result.FundingRestrictions.Any().Should().Be(fails);
+        result.Should().HaveCount(ruleData.Command.Courses.Count());
+        result.Should().AllSatisfy(x =>
+        {
+            x.Outcome.Should().Be(ruleOutcome);
+            ruleData.Command.Courses.Should().Contain(c => c.Id == x.CourseId && c.AimSequenceNumber == x.AimSequenceNumber);
+            x.RuleId.Should().Be(ruleData.Rule.Id);
+            x.RuleName.Should().Be(ruleData.Rule.IlrRuleName);
+        });
     }
     
     [Test, MoqAutoData]
@@ -75,8 +82,8 @@ public class WhenCheckingAgeForCourse
             Command = ruleData.Command with
             {
                 Courses = [
-                    new Course { Id = "Course1", AgeAtStartOfCourse = 50, },
-                    new Course { Id = "Course2", AgeAtStartOfCourse = 50, }
+                    new Course { Id = "Course1", AimSequenceNumber = 3, AgeAtStartOfCourse = 50, },
+                    new Course { Id = "Course2", AimSequenceNumber = 4, AgeAtStartOfCourse = 50, }
                 ]
             }
         };
@@ -85,8 +92,14 @@ public class WhenCheckingAgeForCourse
         var result = CourseAgeCheckActivity.Run(ruleData, null!);
         
         // assert
-        result.FundingRestrictions.Should().HaveCount(2);
-        result.FundingRestrictions.First().CourseId.Should().Be("Course1");
-        result.FundingRestrictions.Last().CourseId.Should().Be("Course2");
+        result.Should().HaveCount(2);
+        result.Should().AllSatisfy(x =>
+        {
+            x.CourseId.Should().BeOneOf("Course1", "Course2");
+            x.AimSequenceNumber.Should().BeOneOf(3, 4);
+            x.Outcome.Should().Be(RuleOutcome.Error);
+            x.RuleId.Should().Be(ruleData.Rule.Id);
+            x.RuleName.Should().Be(ruleData.Rule.IlrRuleName);
+        });
     }
 }

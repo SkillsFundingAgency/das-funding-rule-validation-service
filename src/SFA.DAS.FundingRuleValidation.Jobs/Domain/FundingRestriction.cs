@@ -1,7 +1,6 @@
 namespace SFA.DAS.FundingRuleValidation.Jobs.Domain;
 
-public record FundingRestriction(
-    string CourseId,
-    int AimSequenceNumber,
-    string RestrictionName,
-    string RestrictedValue);
+public record FundingRestriction(string RestrictionName, string RestrictedValue)
+{
+    public static FundingRestriction Unknown => new("Unknown", "Unknown");
+}
