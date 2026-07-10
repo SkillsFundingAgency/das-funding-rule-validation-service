@@ -23,7 +23,7 @@ public class FundingRuleOrchestrator
         if (rules is { Count: 0 })
         {
             logger.LogInformation("{CorrelationId}-{InstanceId}: No rules found", command.CorrelationId, context.InstanceId);
-            result = new ValidateLearnerResult(command.CorrelationId, command.Ukprn, command.Uln, ValidationStatus.Passed, []);
+            result = new ValidateLearnerResult(command.CorrelationId, command.WaitingInstanceId, command.Ukprn, command.Uln, ValidationStatus.Passed, []);
             await context.CallActivityAsync(nameof(SendValidationResultActivity), result);
             return;
         }
@@ -66,7 +66,7 @@ public class FundingRuleOrchestrator
         var status = outputs.All(x => x.Outcome == RuleOutcome.Success)
             ? ValidationStatus.Passed
             : ValidationStatus.Failed;
-        result = new ValidateLearnerResult(command.CorrelationId, command.Ukprn, command.Uln, status, outputs);
+        result = new ValidateLearnerResult(command.CorrelationId, command.WaitingInstanceId, command.Ukprn, command.Uln, status, outputs);
         await context.CallActivityAsync(nameof(SendValidationResultActivity), result);
         logger.LogInformation("{CorrelationId}-{InstanceId}: Validation complete", command.CorrelationId, context.InstanceId);
     }
