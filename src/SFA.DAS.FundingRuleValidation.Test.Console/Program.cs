@@ -1,8 +1,10 @@
-﻿using System.Text.Json;
-using Azure.Messaging.ServiceBus;
+﻿using Azure.Messaging.ServiceBus;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using SFA.DAS.FundingRuleValidation.Jobs.Core;
 using SFA.DAS.FundingRuleValidation.Jobs.Domain;
+using SFA.DAS.FundingRuleValidation.Test.Console;
 
 var config = new ConfigurationBuilder().AddUserSecrets<Program>().Build();
 var connectionString = config[GlobalConstants.ServiceBusConnectionName];
@@ -24,50 +26,130 @@ var courses = new List<Course>
         EndDate = DateTime.UtcNow.AddMonths(6),
         PlannedEndDate = DateTime.UtcNow.AddMonths(6),
         Status = LearnerCourseStatus.InLearning,
-        TrainingType = TrainingType.Apprenticeship,
+        TrainingType = TrainingType.Standard,
         Type = CourseType.Apprenticeship,
     }
 };
 
-var command = new ValidateLearnerCommand(Guid.NewGuid().ToString(), ukprn, uln, courses);
-
 var cts = new CancellationTokenSource();
 var token = cts.Token;
-var readerTask = Task.Run(ReceiveMonitor);
 
 while (true)
 {
+    Console.WriteLine("1 = process-job, Ctrl+1 to send job message");
+    Console.WriteLine($"2 = {GlobalConstants.IncomingQueueName}");
+    Console.WriteLine($"3 = {GlobalConstants.OutgoingQueueName}");
+    Console.WriteLine("4 = job-complete");
+    Console.WriteLine();
+    Console.WriteLine("Shift+<n> to clear the queue messages");
+    
     var key = Console.ReadKey();
+    Console.Clear();
+    
     switch (key.Key)
     {
-        case ConsoleKey.Spacebar:
-            var cursorPos = Console.GetCursorPosition();
-            Console.SetCursorPosition(cursorPos.Left-1, cursorPos.Top);
-            Console.WriteLine("Sending message...");
-            await sender.SendMessageAsync(new ServiceBusMessage(JsonSerializer.Serialize(command)));
+        case ConsoleKey.D1:
+            if (key.Modifiers.HasFlag(ConsoleModifiers.Control))
+            {
+                Console.WriteLine("Sending job 1 message");
+                await client.SendJobAsync("job-1.xml", token);
+                break;    
+            }
+            
+            if (key.Modifiers.HasFlag(ConsoleModifiers.Shift))
+            {
+                Console.WriteLine("Clearing job queue");
+                await client.ClearQueueAsync("process-job", token);
+                break;
+            }
+
+            Console.WriteLine("Peeking job messages");
+            var jobMessages = await client.PeekQueueAsync("process-job", token);
+            if (jobMessages is not { Count: > 0 })
+            {
+                Console.WriteLine("No job messages");
+                break;
+            }
+
+            foreach (var jobMessage in jobMessages)
+            {
+                Console.WriteLine($"Job message: {jobMessage}");
+            }
+
             break;
+        case ConsoleKey.D2:
+            if (key.Modifiers.HasFlag(ConsoleModifiers.Shift))
+            {
+                Console.WriteLine("Clearing validation requests");
+                await client.ClearQueueAsync(GlobalConstants.IncomingQueueName, token);
+                break;
+            }
+
+            Console.WriteLine("Peeking validation requests");
+            var validationRequests = await client.PeekQueueAsync(GlobalConstants.IncomingQueueName, token);
+            if (validationRequests is not { Count: > 0 })
+            {
+                Console.WriteLine("No validation requests");
+                break;
+            }
+
+            foreach (var validationRequest in validationRequests)
+            {
+                Console.WriteLine($"Validation request: {validationRequest}");
+            }
+
+            break;
+        case ConsoleKey.D3:
+            if (key.Modifiers.HasFlag(ConsoleModifiers.Shift))
+            {
+                Console.WriteLine("Clearing validation results");
+                await client.ClearQueueAsync(GlobalConstants.OutgoingQueueName, token);
+                break;
+            }
+
+            Console.WriteLine("Peeking validation results");
+            var validationResults = await client.PeekQueueAsync(GlobalConstants.OutgoingQueueName, token);
+            if (validationResults is not { Count: > 0 })
+            {
+                Console.WriteLine("No validation results");
+                break;
+            }
+
+            foreach (var validationResult in validationResults)
+            {
+                Console.WriteLine($"Validation result: {validationResult}");
+            }
+
+            break;
+        case ConsoleKey.D4:
+            if (key.Modifiers.HasFlag(ConsoleModifiers.Shift))
+            {
+                Console.WriteLine("Clearing job results");
+                await client.ClearQueueAsync("job-complete", token);
+                break;
+            }
+
+            Console.WriteLine("Peeking job results");
+            var jobResults = await client.PeekQueueAsync("job-complete", token);
+            if (jobResults is not { Count: > 0 })
+            {
+                Console.WriteLine("No job results");
+                break;
+            }
+
+            foreach (var jobResult in jobResults)
+            {
+                Console.WriteLine($"Job result: {jobResult}");
+            }
+
+            break;
+        case ConsoleKey.Q:
         case ConsoleKey.Escape:
             cts.Cancel();
-            await readerTask;
-            Environment.Exit(0);
+            Console.Clear();
             break;
+        default: continue;
     }
-}
-
-async Task ReceiveMonitor()
-{
-    while (true)
-    {
-        try
-        {
-            var message = await receiver.ReceiveMessageAsync(cancellationToken: token);
-            if (token.IsCancellationRequested) break;
-            await receiver.CompleteMessageAsync(message, token);
-            Console.WriteLine($"Received message: {message.Body}");
-        }
-        catch (TaskCanceledException)
-        {
-            break;
-        }
-    }
+    
+    Console.WriteLine();
 }
