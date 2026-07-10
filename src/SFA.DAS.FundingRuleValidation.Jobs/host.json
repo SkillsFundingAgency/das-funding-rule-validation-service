@@ -18,6 +18,12 @@
     "extensions": {
         "serviceBus": {
             "autoCompleteMessages": true
+        },
+        "durableTask": {
+            "tracing": {
+                "distributedTracingEnabled": true,
+                "version": "V2"
+            }
         }
     }
 }
