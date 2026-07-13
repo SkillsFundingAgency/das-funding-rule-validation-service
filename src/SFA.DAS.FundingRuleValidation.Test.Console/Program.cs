@@ -1,9 +1,6 @@
 ﻿using Azure.Messaging.ServiceBus;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using SFA.DAS.FundingRuleValidation.Jobs.Core;
-using SFA.DAS.FundingRuleValidation.Jobs.Domain;
 using SFA.DAS.FundingRuleValidation.Test.Console;
 
 var config = new ConfigurationBuilder().AddUserSecrets<Program>().Build();
@@ -13,23 +10,6 @@ var connectionString = config[GlobalConstants.ServiceBusConnectionName];
 await using var client = new ServiceBusClient(connectionString);
 await using var sender = client.CreateSender(GlobalConstants.IncomingQueueName);
 await using var receiver = client.CreateReceiver(GlobalConstants.OutgoingQueueName);
-
-const string ukprn = "10000";
-const string uln = "1234567890";
-var courses = new List<Course>
-{
-    new()
-    {
-        Id = "090D5B59-3839-49CE-8A32-038A312B1F4A",
-        AgeAtStartOfCourse = 27,
-        StartDate = new DateTime(2026, 5, 31),
-        EndDate = DateTime.UtcNow.AddMonths(6),
-        PlannedEndDate = DateTime.UtcNow.AddMonths(6),
-        Status = LearnerCourseStatus.InLearning,
-        TrainingType = TrainingType.Standard,
-        Type = CourseType.Apprenticeship,
-    }
-};
 
 var cts = new CancellationTokenSource();
 var token = cts.Token;
@@ -52,7 +32,7 @@ while (true)
             if (key.Modifiers.HasFlag(ConsoleModifiers.Control))
             {
                 Console.WriteLine("Sending job 1 message");
-                await client.SendJobAsync("job-1.xml", token);
+                await client.SendJobAsync(229500, "10034309", "ilr2526-files", "10034309/ILR-10034309-2526-20260514-111603-01-Validz.XML", token);
                 break;    
             }
             
@@ -147,6 +127,7 @@ while (true)
         case ConsoleKey.Escape:
             cts.Cancel();
             Console.Clear();
+            Environment.Exit(0);
             break;
         default: continue;
     }
