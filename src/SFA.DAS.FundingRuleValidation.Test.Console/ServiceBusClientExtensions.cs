@@ -6,15 +6,15 @@ namespace SFA.DAS.FundingRuleValidation.Test.Console;
 
 public static class ServiceBusClientExtensions
 {
-    public static async Task SendJobAsync(this ServiceBusClient client, string filename, CancellationToken token = default)
+    public static async Task SendJobAsync(this ServiceBusClient client, long jobId, string ukprn, string container, string filename, CancellationToken token = default)
     {
         var job = new ProcessJobMessage
         {
-            JobId = Random.Shared.Next(1, 1000000),
+            JobId = jobId,
             KeyValuePairs = new ProcessJobKeyValues
             {
-                Ukprn = "10000",
-                Container = "jobs",
+                Ukprn = ukprn,
+                Container = container,
                 Filename = filename
             }
         };

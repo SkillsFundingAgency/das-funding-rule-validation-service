@@ -10,7 +10,8 @@ public class WhenCheckingAgeForCourse
     [Test, MoqAutoData]
     public void Then_When_There_Are_No_Courses_Then_No_Funding_Restrictions_Are_Returned(
         RuleData ruleData,
-        CourseAgeCheckParameters parameters)
+        CourseAgeCheckParameters parameters,
+        [Greedy] CourseAgeCheckActivity sut)
     {
         parameters.MinimumAge = 25;
         parameters.MaximumAge = 26;
@@ -24,7 +25,7 @@ public class WhenCheckingAgeForCourse
         };
 
         // act
-        var result = CourseAgeCheckActivity.Run(ruleData, null!);
+        var result = sut.Run(ruleData, null!);
         
         // assert
         result.Should().BeEmpty();
@@ -40,7 +41,8 @@ public class WhenCheckingAgeForCourse
         int age,
         RuleOutcome ruleOutcome,
         RuleData ruleData,
-        CourseAgeCheckParameters parameters)
+        CourseAgeCheckParameters parameters,
+        [Greedy] CourseAgeCheckActivity sut)
     {
         parameters.MinimumAge = 20;
         parameters.MaximumAge = 30;
@@ -55,7 +57,7 @@ public class WhenCheckingAgeForCourse
         };
         
         // act
-        var result = CourseAgeCheckActivity.Run(ruleData, null!);
+        var result = sut.Run(ruleData, null!);
         
         // assert
         result.Should().HaveCount(ruleData.Command.Courses.Count());
@@ -71,7 +73,8 @@ public class WhenCheckingAgeForCourse
     [Test, MoqAutoData]
     public void Then_Multiple_Courses_Can_Be_Tested_Against_The_Rule(
         RuleData ruleData,
-        CourseAgeCheckParameters parameters)
+        CourseAgeCheckParameters parameters,
+        [Greedy] CourseAgeCheckActivity sut)
     {
         parameters.MinimumAge = 20;
         parameters.MaximumAge = 30;
@@ -89,7 +92,7 @@ public class WhenCheckingAgeForCourse
         };
         
         // act
-        var result = CourseAgeCheckActivity.Run(ruleData, null!);
+        var result = sut.Run(ruleData, null!);
         
         // assert
         result.Should().HaveCount(2);

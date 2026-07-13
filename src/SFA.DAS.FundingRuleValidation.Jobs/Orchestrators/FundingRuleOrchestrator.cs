@@ -12,17 +12,16 @@ public class FundingRuleOrchestrator
     public static async Task ApplyFundingRules([OrchestrationTrigger] TaskOrchestrationContext context)
     {
         ILogger logger = context.CreateReplaySafeLogger(nameof(ApplyFundingRules));
-        
         var command = context.GetInput<ValidateLearnerCommand>()!;
         ValidateLearnerResult result;
-        
+
         // Fetch all rules for all courses
         var courseDates = command.Courses.Select(x => x.StartDate.Date).Distinct().ToList();
         var rules = await context.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDatesActivity), courseDates);
-        
+
         if (rules is { Count: 0 })
         {
-            logger.LogInformation("{CorrelationId}-{InstanceId}: No rules found", command.CorrelationId, context.InstanceId);
+            logger.LogInformation("No active matching rules found");
             result = new ValidateLearnerResult(command.CorrelationId, command.WaitingInstanceId, command.Ukprn, command.Uln, ValidationStatus.Passed, []);
             await context.CallActivityAsync(nameof(SendValidationResultActivity), result);
             return;
@@ -32,22 +31,22 @@ public class FundingRuleOrchestrator
         foreach (var rule in rules)
         {
             // get only the courses for the rule
-            var courses = command.Courses.Where(x => 
+            var courses = command.Courses.Where(x =>
                 rule.CourseIds.Contains(x.Id)
                 && x.StartDate >= rule.EffectiveFrom
                 && x.StartDate <= rule.EffectiveTo
             ).ToList();
-            
+
             if (courses.Count == 0)
             {
                 // no courses apply to this rule
                 continue;
             }
-            
+
             // send only the applicable data
             var ruleCommand = command with { Courses = courses };
-           
-            logger.LogInformation("{CorrelationId}-{InstanceId}: Calling {RuleName} with courses: {Courses}", command.CorrelationId, context.InstanceId, rule.RuleName, courses.Select(x => x.Id));
+
+            logger.LogInformation("Calling {RuleName} with courses: {Courses}", rule.RuleName, courses.Select(x => x.Id));
             try
             {
                 var outcomes = await context.CallActivityAsync<List<RuleCourseOutcome>>(rule.RuleName, new RuleData(rule, ruleCommand));
@@ -58,8 +57,16 @@ public class FundingRuleOrchestrator
             }
             catch (TaskFailedException ex)
             {
-                logger.LogError(ex, "{CorrelationId}-{InstanceId}: Error calling {RuleName}, make sure the rule name is a valid Activity", command.CorrelationId, context.InstanceId, rule.RuleName);
-                outputs.AddRange(courses.Select(x => new RuleCourseOutcome(rule.Id, rule.IlrRuleName, x.Id, x.AimSequenceNumber, RuleOutcome.Error, [FundingRestriction.Unknown])));
+                logger.LogError(ex, "Error calling {RuleName}, make sure the rule name is a valid Activity", rule.RuleName);
+                outputs.AddRange(courses.Select(x => 
+                    new RuleCourseOutcome(
+                        rule.Id,
+                        rule.IlrRuleName,
+                        x.Id,
+                        x.AimSequenceNumber,
+                        RuleOutcome.Error,
+                        [FundingRestriction.Unknown])
+                ));
             }
         }
 
@@ -68,6 +75,6 @@ public class FundingRuleOrchestrator
             : ValidationStatus.Failed;
         result = new ValidateLearnerResult(command.CorrelationId, command.WaitingInstanceId, command.Ukprn, command.Uln, status, outputs);
         await context.CallActivityAsync(nameof(SendValidationResultActivity), result);
-        logger.LogInformation("{CorrelationId}-{InstanceId}: Validation complete", command.CorrelationId, context.InstanceId);
+        logger.LogInformation("Validation complete");
     }
 }
