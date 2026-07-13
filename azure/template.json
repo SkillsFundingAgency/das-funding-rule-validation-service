@@ -104,6 +104,7 @@
         "functionAppName": "[concat(variables('resourceNamePrefix'), '-fa')]",
         "appServicePlanName": "[concat(variables('resourceNamePrefix'), '-asp')]",
         "databaseName": "[concat(variables('resourceNamePrefix'), '-db')]",
+        "storageAccountName": "[toLower(replace(concat(variables('resourceNamePrefix'), 'str'), '-', ''))]",
         "privateLinkScopeName": "[toLower(concat('das-', parameters('resourceEnvironmentName'),'-shared-ampls'))]",
         "configNames": "SFA.DAS.FundingRuleValidation.Jobs",
         "routeTableId": {
@@ -237,6 +238,36 @@
         },
         {
             "apiVersion": "2021-04-01",
+            "name": "[concat(variables('storageAccountName'), '-', parameters('utcValue'))]",
+            "type": "Microsoft.Resources/deployments",
+            "resourceGroup": "[variables('resourceGroupName')]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('deploymentUrlBase'),'storage-account-arm.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "storageAccountName": {
+                        "value": "[variables('storageAccountName')]"
+                    },
+                    "storageAccountLocation": {
+                        "value": "[parameters('resourceGroupLocation')]"
+                    },
+                    "accountType": {
+                        "value": "Standard_LRS"
+                    },
+                    "storageKind": {
+                        "value": "StorageV2"
+                    }
+                }
+            },
+            "dependsOn": [
+                "[variables('resourceGroupName')]"
+            ]
+        },
+        {
+            "apiVersion": "2021-04-01",
             "name": "[concat(variables('functionAppName'), '-', parameters('utcValue'))]",
             "type": "Microsoft.Resources/deployments",
             "resourceGroup": "[variables('resourceGroupName')]",
@@ -295,7 +326,7 @@
                                 },
                                 {
                                     "name": "ConnectionStrings__TableStorageConnectionString",
-                                    "value": "[parameters('sharedStorageAccountConnectionString')]"
+                                    "value": "[reference(concat(variables('storageAccountName'), '-', parameters('utcValue'))).outputs.storageConnectionString.value]"
                                 },
                                 {
                                     "name": "FUNCTIONS_EXTENSION_VERSION",
@@ -323,7 +354,8 @@
             "dependsOn": [
                 "[variables('resourceGroupName')]",
                 "[concat(variables('appServicePlanName'), '-', parameters('utcValue'))]",
-                "[concat(variables('functionAppName'), '-application-insights-', parameters('utcValue'))]"
+                "[concat(variables('functionAppName'), '-application-insights-', parameters('utcValue'))]",
+                "[concat(variables('storageAccountName'), '-', parameters('utcValue'))]"
             ]
         },
         {
@@ -377,6 +409,10 @@
         "FunctionAppName": {
             "type": "string",
             "value": "[variables('functionAppName')]"
+        },
+        "StorageAccountName": {
+            "type": "string",
+            "value": "[variables('storageAccountName')]"
         }
     }
 }
