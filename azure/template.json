@@ -95,6 +95,9 @@
         "SharedRouteTableName": {
             "type": "string",
             "defaultValue": ""
+        },
+        "sharedServiceBusFqdn": {
+            "type": "string"
         }
     },
     "variables": {
@@ -321,11 +324,15 @@
                                     "value": "[parameters('sharedStorageAccountConnectionString')]"
                                 },
                                 {
-                                    "name": "ConnectionStrings__SqlConnectionString",
+                                    "name": "SqlConnectionString",
                                     "value": "[parameters('databaseConnectionString')]"
                                 },
                                 {
-                                    "name": "ConnectionStrings__TableStorageConnectionString",
+                                    "name": "ServiceBusConnection",
+                                    "value": "[parameters('sharedServiceBusFqdn')]"
+                                },
+                                {
+                                    "name": "TableStorageConnectionString",
                                     "value": "[reference(concat(variables('storageAccountName'), '-', parameters('utcValue'))).outputs.storageConnectionString.value]"
                                 },
                                 {
