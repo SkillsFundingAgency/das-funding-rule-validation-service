@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using Azure.Data.Tables;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
@@ -12,6 +13,7 @@ using SFA.DAS.FundingRuleValidation.Jobs.Data.Sql;
 using SFA.DAS.FundingRuleValidation.Jobs.Data.TableStorage;
 using SFA.DAS.FundingRuleValidation.Jobs.Domain;
 
+[assembly: ExcludeFromCodeCoverage]
 namespace SFA.DAS.FundingRuleValidation.Benchmarks;
 
 [MemoryDiagnoser]
