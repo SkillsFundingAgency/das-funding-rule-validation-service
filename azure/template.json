@@ -324,7 +324,7 @@
                                     "value": "[parameters('sharedStorageAccountConnectionString')]"
                                 },
                                 {
-                                    "name": "SqlConnectionString",
+                                    "name": "ConnectionStrings__SqlConnectionString",
                                     "value": "[parameters('databaseConnectionString')]"
                                 },
                                 {
@@ -332,7 +332,7 @@
                                     "value": "[parameters('sharedServiceBusFqdn')]"
                                 },
                                 {
-                                    "name": "TableStorageConnectionString",
+                                    "name": "ConnectionStrings__TableStorageConnectionString",
                                     "value": "[reference(concat(variables('storageAccountName'), '-', parameters('utcValue'))).outputs.storageConnectionString.value]"
                                 },
                                 {
