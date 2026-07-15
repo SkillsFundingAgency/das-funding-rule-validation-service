@@ -19,7 +19,7 @@ public static class ServiceBusClientExtensions
             }
         };
         
-        await using var sender = client.CreateSender("process-job");
+        await using var sender = client.CreateSender("ASFundingValidation");
         await sender.SendMessageAsync(new ServiceBusMessage(JsonSerializer.Serialize(job)), token);
     }
     

@@ -32,19 +32,19 @@ while (true)
             if (key.Modifiers.HasFlag(ConsoleModifiers.Control))
             {
                 Console.WriteLine("Sending job 1 message");
-                await client.SendJobAsync(229500, "10034309", "ilr2526-files", "10034309/ILR-10034309-2526-20260514-111603-01-Validz.XML", token);
+                await client.SendJobAsync(229500, "10034309", "ilr2526-files", "10034309/ILR-10034309-2526-20260514-111603-01-Valid.XML", token);
                 break;    
             }
             
             if (key.Modifiers.HasFlag(ConsoleModifiers.Shift))
             {
                 Console.WriteLine("Clearing job queue");
-                await client.ClearQueueAsync("process-job", token);
+                await client.ClearQueueAsync("ASFundingValidation", token);
                 break;
             }
 
             Console.WriteLine("Peeking job messages");
-            var jobMessages = await client.PeekQueueAsync("process-job", token);
+            var jobMessages = await client.PeekQueueAsync("ASFundingValidation", token);
             if (jobMessages is not { Count: > 0 })
             {
                 Console.WriteLine("No job messages");
@@ -105,12 +105,12 @@ while (true)
             if (key.Modifiers.HasFlag(ConsoleModifiers.Shift))
             {
                 Console.WriteLine("Clearing job results");
-                await client.ClearQueueAsync("job-complete", token);
+                await client.ClearQueueAsync("jobstatusqueue", token);
                 break;
             }
 
             Console.WriteLine("Peeking job results");
-            var jobResults = await client.PeekQueueAsync("job-complete", token);
+            var jobResults = await client.PeekQueueAsync("jobstatusqueue", token);
             if (jobResults is not { Count: > 0 })
             {
                 Console.WriteLine("No job results");
