@@ -43,7 +43,6 @@ jobs:
             TargetFileName: '*.schema.json'
             TableName: Configuration
             ConfigurationSecrets:
-              NServiceBusLicense: $(NServiceBusLicense)
               SqlConnectionStringAdAuth: $(SqlConnectionStringAdAuth)
               ServiceBusConnectionString: $(ServiceBusConnectionString)
         - template: azure-pipelines-templates/deploy/step/sql-dacpac-deploy.yml@das-platform-building-blocks
