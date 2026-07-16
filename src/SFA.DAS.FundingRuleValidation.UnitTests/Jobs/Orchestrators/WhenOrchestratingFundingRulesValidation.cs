@@ -18,14 +18,14 @@ public class WhenOrchestratingFundingRulesValidation
             .Returns(command);
         
         context
-            .Setup(x => x.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDatesActivity), It.IsAny<List<DateTime>>()))
+            .Setup(x => x.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDatesActivity), It.IsAny<List<DateTime>>(), It.IsAny<TaskOptions?>()))
             .ReturnsAsync([]);
         
         // act
         await FundingRuleOrchestrator.ApplyFundingRules(context.Object);
 
         // assert
-        context.Verify(x => x.CallActivityAsync<RuleCourseOutcome>(It.IsAny<string>(), It.IsAny<RuleData>()), Times.Never);
+        context.Verify(x => x.CallActivityAsync<RuleCourseOutcome>(It.IsAny<string>(), It.IsAny<RuleData>(), It.IsAny<TaskOptions?>()), Times.Never);
         
         context.Verify(x => x.CallActivityAsync(
                 nameof(SendValidationResultActivity),
@@ -46,7 +46,7 @@ public class WhenOrchestratingFundingRulesValidation
          var command = new ValidateLearnerCommand(Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), "123456789", "987654321", [course]);
          
          context
-             .Setup(x => x.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDatesActivity), It.IsAny<List<DateTime>>()))
+             .Setup(x => x.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDatesActivity), It.IsAny<List<DateTime>>(), It.IsAny<TaskOptions?>()))
              .ReturnsAsync(rules);
      
          context
@@ -59,7 +59,7 @@ public class WhenOrchestratingFundingRulesValidation
              rule.EffectiveTo = DateTime.UtcNow.AddDays(10);
              rule.CourseIds = command.Courses.Select(x => x.Id).ToHashSet();
              context
-                 .Setup(x => x.CallActivityAsync<List<RuleCourseOutcome>>(rule.RuleName, It.IsAny<RuleData>()))
+                 .Setup(x => x.CallActivityAsync<List<RuleCourseOutcome>>(rule.RuleName, It.IsAny<RuleData>(), It.IsAny<TaskOptions?>()))
                  .ReturnsAsync([new RuleCourseOutcome(rule.Id, rule.IlrRuleName, command.Courses.First().Id, command.Courses.First().AimSequenceNumber, RuleOutcome.Success, [])]);
          }
 
@@ -97,7 +97,7 @@ public class WhenOrchestratingFundingRulesValidation
          var command = new ValidateLearnerCommand(Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), "123456789", "987654321", [course]);
          
          context
-             .Setup(x => x.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDatesActivity), It.IsAny<List<DateTime>>()))
+             .Setup(x => x.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDatesActivity), It.IsAny<List<DateTime>>(), It.IsAny<TaskOptions?>()))
              .ReturnsAsync(rules);
      
          context
@@ -110,7 +110,7 @@ public class WhenOrchestratingFundingRulesValidation
              rule.EffectiveTo = DateTime.UtcNow.AddDays(10);
              rule.CourseIds = command.Courses.Select(x => x.Id).ToHashSet();
              context
-                 .Setup(x => x.CallActivityAsync<List<RuleCourseOutcome>>(rule.RuleName, It.IsAny<RuleData>()))
+                 .Setup(x => x.CallActivityAsync<List<RuleCourseOutcome>>(rule.RuleName, It.IsAny<RuleData>(), It.IsAny<TaskOptions?>()))
                  .ReturnsAsync([new RuleCourseOutcome(
                      rule.Id,
                      rule.IlrRuleName,
@@ -157,7 +157,7 @@ public class WhenOrchestratingFundingRulesValidation
          var command = new ValidateLearnerCommand(Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), "123456789", "987654321", [course]);
          
          context
-             .Setup(x => x.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDatesActivity), It.IsAny<List<DateTime>>()))
+             .Setup(x => x.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDatesActivity), It.IsAny<List<DateTime>>(), It.IsAny<TaskOptions?>()))
              .ReturnsAsync(rules);
      
          context
@@ -170,7 +170,7 @@ public class WhenOrchestratingFundingRulesValidation
              rule.EffectiveTo = DateTime.UtcNow.AddDays(10);
              rule.CourseIds = command.Courses.Select(x => x.Id).ToHashSet();
              context
-                 .Setup(x => x.CallActivityAsync<List<RuleCourseOutcome>>(rule.RuleName, It.IsAny<RuleData>()))
+                 .Setup(x => x.CallActivityAsync<List<RuleCourseOutcome>>(rule.RuleName, It.IsAny<RuleData>(), It.IsAny<TaskOptions?>()))
                  .ThrowsAsync(new TaskFailedException(rule.RuleName, 100, new Exception("Failed to run activity")));
          }
 

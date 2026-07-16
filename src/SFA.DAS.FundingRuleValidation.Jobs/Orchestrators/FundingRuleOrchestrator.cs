@@ -2,11 +2,12 @@
 using Microsoft.DurableTask;
 using Microsoft.Extensions.Logging;
 using SFA.DAS.FundingRuleValidation.Jobs.Activities;
+using SFA.DAS.FundingRuleValidation.Jobs.Core;
 using SFA.DAS.FundingRuleValidation.Jobs.Domain;
 
 namespace SFA.DAS.FundingRuleValidation.Jobs.Orchestrators;
 
-public class FundingRuleOrchestrator
+public static class FundingRuleOrchestrator
 {
     [Function(nameof(ApplyFundingRules))]
     public static async Task ApplyFundingRules([OrchestrationTrigger] TaskOrchestrationContext context)
@@ -17,7 +18,7 @@ public class FundingRuleOrchestrator
 
         // Fetch all rules for all courses
         var courseDates = command.Courses.Select(x => x.StartDate.Date).Distinct().ToList();
-        var rules = await context.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDatesActivity), courseDates);
+        var rules = await context.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDatesActivity), courseDates, GlobalConstants.TaskOptions);
 
         if (rules is { Count: 0 })
         {
@@ -49,7 +50,7 @@ public class FundingRuleOrchestrator
             logger.LogInformation("Calling {RuleName} with courses: {Courses}", rule.RuleName, courses.Select(x => x.Id));
             try
             {
-                var outcomes = await context.CallActivityAsync<List<RuleCourseOutcome>>(rule.RuleName, new RuleData(rule, ruleCommand));
+                var outcomes = await context.CallActivityAsync<List<RuleCourseOutcome>>(rule.RuleName, new RuleData(rule, ruleCommand), GlobalConstants.TaskOptions);
                 if (outcomes is { Count: > 0 })
                 {
                     outputs.AddRange(outcomes);
@@ -57,7 +58,7 @@ public class FundingRuleOrchestrator
             }
             catch (TaskFailedException ex)
             {
-                logger.LogError(ex, "Error calling {RuleName}, make sure the rule name is a valid Activity", rule.RuleName);
+                logger.LogError(ex, "Error calling {RuleName}", rule.RuleName);
                 outputs.AddRange(courses.Select(x => 
                     new RuleCourseOutcome(
                         rule.Id,
@@ -74,7 +75,7 @@ public class FundingRuleOrchestrator
             ? ValidationStatus.Passed
             : ValidationStatus.Failed;
         result = new ValidateLearnerResult(command.CorrelationId, command.WaitingInstanceId, command.Ukprn, command.Uln, status, outputs);
-        await context.CallActivityAsync(nameof(SendValidationResultActivity), result);
+        await context.CallActivityAsync(nameof(SendValidationResultActivity), result, GlobalConstants.TaskOptions);
         logger.LogInformation("Validation complete");
     }
 }

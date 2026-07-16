@@ -1,4 +1,6 @@
-﻿namespace SFA.DAS.FundingRuleValidation.Jobs.Core;
+﻿using Microsoft.DurableTask;
+
+namespace SFA.DAS.FundingRuleValidation.Jobs.Core;
 
 public static class GlobalConstants
 {
@@ -7,4 +9,10 @@ public static class GlobalConstants
     public const string IncomingQueueName = "validate-learner-requests";
     public const string OutgoingQueueName = "validate-learner-callback";
     public const string ServiceBusConnectionName = "ServiceBusConnection";
+    
+    private const int MaxRetryCount = 3;
+    private const int FirstRetryIntervalInMilliseconds = 50;
+    private static readonly RetryPolicy RetryPolicy = new(MaxRetryCount, TimeSpan.FromMilliseconds(FirstRetryIntervalInMilliseconds));
+    private static readonly TaskRetryOptions TaskRetryOptions = new(RetryPolicy);
+    public static readonly TaskOptions TaskOptions = new(TaskRetryOptions);
 }
