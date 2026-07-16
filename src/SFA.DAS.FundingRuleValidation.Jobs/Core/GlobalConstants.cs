@@ -10,7 +10,7 @@ public static class GlobalConstants
     public const string OutgoingQueueName = "validate-learner-callback";
     public const string ServiceBusConnectionName = "ServiceBusConnection";
     
-    private const int MaxRetryCount = 3;
+    private const int MaxRetryCount = 5;
     private const int FirstRetryIntervalInMilliseconds = 50;
     private static readonly RetryPolicy RetryPolicy = new(MaxRetryCount, TimeSpan.FromMilliseconds(FirstRetryIntervalInMilliseconds));
     private static readonly TaskRetryOptions TaskRetryOptions = new(RetryPolicy);

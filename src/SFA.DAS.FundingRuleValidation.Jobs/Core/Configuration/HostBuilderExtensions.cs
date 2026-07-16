@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Azure.Data.Tables;
+using Azure.Identity;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.Extensions.Configuration;
@@ -64,7 +65,7 @@ public static class HostBuilderExtensions
             // services.AddTransient<IRulesRepository, SqlRulesRepository>();
             
             // service bus
-            services.AddSingleton(_ => new ServiceBusClient(serviceBusConnectionString));
+            services.AddSingleton(_ => new ServiceBusClient(serviceBusConnectionString, new DefaultAzureCredential()));
             
             return builder;
         }
