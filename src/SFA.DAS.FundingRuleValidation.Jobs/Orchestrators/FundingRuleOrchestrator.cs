@@ -14,68 +14,59 @@ public static class FundingRuleOrchestrator
     {
         ILogger logger = context.CreateReplaySafeLogger(nameof(ApplyFundingRules));
         var command = context.GetInput<ValidateLearnerCommand>()!;
-        ValidateLearnerResult result;
-
-        // Fetch all rules for all courses
-        var courseDates = command.Courses.Select(x => x.StartDate.Date).Distinct().ToList();
-        var rules = await context.CallActivityAsync<List<FundingRule>>(nameof(GetActiveRulesForDatesActivity), courseDates, GlobalConstants.TaskOptions);
-
-        if (rules is { Count: 0 })
+        var status = ValidationStatus.SystemError;
+        List<RuleCourseOutcome> outputs = [];
+        
+        try
         {
-            logger.LogInformation("No active matching rules found");
-            result = new ValidateLearnerResult(command.CorrelationId, command.WaitingInstanceId, command.Ukprn, command.Uln, ValidationStatus.Passed, []);
-            await context.CallActivityAsync(nameof(SendValidationResultActivity), result);
-            return;
-        }
+            // Fetch all rules for all courses enabled for the specified dates
+            var rules = await context.CallActivityAsync<List<FundingRule>>(
+                nameof(GetActiveRulesForDatesActivity),
+                command.Courses.Select(x => x.StartDate.Date).Distinct().ToList(),
+                GlobalConstants.TaskOptions);
 
-        var outputs = new List<RuleCourseOutcome>();
-        foreach (var rule in rules)
-        {
-            // get only the courses for the rule
-            var courses = command.Courses.Where(x =>
-                rule.CourseIds.Contains(x.Id)
-                && x.StartDate >= rule.EffectiveFrom
-                && x.StartDate <= rule.EffectiveTo
-            ).ToList();
-
-            if (courses.Count == 0)
+            if (rules is { Count: 0 })
             {
-                // no courses apply to this rule
-                continue;
+                logger.LogInformation("No active matching rules found");
+                status = ValidationStatus.Passed;
+                goto Finished;
             }
-
-            // send only the applicable data
-            var ruleCommand = command with { Courses = courses };
-
-            logger.LogInformation("Calling {RuleName} with courses: {Courses}", rule.RuleName, courses.Select(x => x.Id));
-            try
+            
+            foreach (var rule in rules)
             {
+                // get only the courses for the rule
+                var courses = command.Courses.Where(CourseSelector(rule)).ToList();
+
+                if (courses.Count == 0) continue;
+
+                // send only the applicable data
+                var ruleCommand = command with { Courses = courses };
+
+                logger.LogInformation("Calling {RuleName} with courses: {Courses}", rule.RuleName, courses.Select(x => x.Id));
                 var outcomes = await context.CallActivityAsync<List<RuleCourseOutcome>>(rule.RuleName, new RuleData(rule, ruleCommand), GlobalConstants.TaskOptions);
                 if (outcomes is { Count: > 0 })
                 {
                     outputs.AddRange(outcomes);
                 }
             }
-            catch (TaskFailedException ex)
-            {
-                logger.LogError(ex, "Error calling {RuleName}", rule.RuleName);
-                outputs.AddRange(courses.Select(x => 
-                    new RuleCourseOutcome(
-                        rule.Id,
-                        rule.IlrRuleName,
-                        x.Id,
-                        x.AimSequenceNumber,
-                        RuleOutcome.Error,
-                        [FundingRestriction.Unknown])
-                ));
-            }
+            
+            status = outputs.All(x => x.Outcome == RuleOutcome.Success)
+                ? ValidationStatus.Passed
+                : ValidationStatus.Failed;
         }
-
-        var status = outputs.All(x => x.Outcome == RuleOutcome.Success)
-            ? ValidationStatus.Passed
-            : ValidationStatus.Failed;
-        result = new ValidateLearnerResult(command.CorrelationId, command.WaitingInstanceId, command.Ukprn, command.Uln, status, outputs);
+        catch (TaskFailedException ex)
+        {
+            logger.LogError(ex, "Orchestrator failed");
+            outputs = [];
+        }
+        
+        Finished:
+        var result = new ValidateLearnerResult(command.CorrelationId, command.WaitingInstanceId, command.Ukprn, command.Uln, status, outputs);
         await context.CallActivityAsync(nameof(SendValidationResultActivity), result, GlobalConstants.TaskOptions);
-        logger.LogInformation("Validation complete");
     }
+
+    private static Func<Course, bool> CourseSelector(FundingRule rule) => x =>
+        rule.CourseIds.Contains(x.Id)
+        && x.StartDate >= rule.EffectiveFrom
+        && x.StartDate <= rule.EffectiveTo;
 }

@@ -26,12 +26,10 @@ public class WhenOrchestratingFundingRulesValidation
 
         // assert
         context.Verify(x => x.CallActivityAsync<RuleCourseOutcome>(It.IsAny<string>(), It.IsAny<RuleData>(), It.IsAny<TaskOptions?>()), Times.Never);
-        
         context.Verify(x => x.CallActivityAsync(
-                nameof(SendValidationResultActivity),
-                It.Is<ValidateLearnerResult>(y => y.Status == ValidationStatus.Passed && !y.RuleOutcomes.Any())
-            ),
-            Times.Once);
+            nameof(SendValidationResultActivity),
+            It.Is<ValidateLearnerResult>(r => r.Status == ValidationStatus.Passed && !r.RuleOutcomes.Any()), 
+            It.IsAny<TaskOptions?>()), Times.Once);
     }
     
      [Test, MoqAutoData]
@@ -146,7 +144,7 @@ public class WhenOrchestratingFundingRulesValidation
      }
 
      [Test, MoqAutoData]
-     public async Task Then_Failed_Activity_Invocations_Are_Caught_And_Do_Not_Fail_The_Evaluation_Process(
+     public async Task Then_Failed_Activity_Invocations_Are_Caught_And_Return_SystemError(
          List<FundingRule> rules,
          Course course,
          Mock<TaskOrchestrationContext> context)
@@ -188,12 +186,7 @@ public class WhenOrchestratingFundingRulesValidation
          capturedResult!.CorrelationId.Should().Be(command.CorrelationId);
          capturedResult.Ukprn.Should().Be(command.Ukprn);
          capturedResult.Uln.Should().Be(command.Uln);
-         capturedResult.Status.Should().Be(ValidationStatus.Failed);
-         capturedResult.RuleOutcomes.Should().HaveCount(3);
-         capturedResult.RuleOutcomes.Should().AllSatisfy(x =>
-         {
-             x.FundingRestrictions.Should().BeEquivalentTo([FundingRestriction.Unknown]);
-             ruleNames.Contains(x.RuleName).Should().BeTrue();
-         });
+         capturedResult.Status.Should().Be(ValidationStatus.SystemError);
+         capturedResult.RuleOutcomes.Should().HaveCount(0);
      }
 }
