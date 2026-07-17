@@ -54,7 +54,7 @@ public static class FundingRuleOrchestrator
                 ? ValidationStatus.Passed
                 : ValidationStatus.Failed;
         }
-        catch (TaskFailedException ex)
+        catch (Exception ex)
         {
             logger.LogError(ex, "Orchestrator failed");
             outputs = [];
