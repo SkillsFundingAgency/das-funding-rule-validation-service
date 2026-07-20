@@ -1,11 +1,11 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 namespace SFA.DAS.FundingRuleValidation.Jobs.Domain;
 
 [JsonConverter(typeof(JsonStringEnumConverter))]
-public enum RuleOutcome
+public enum ValidationStatus
 {
-    Error,
-    Success,
-    Warning,
+    Passed,
+    Failed,
+    SystemError
 }

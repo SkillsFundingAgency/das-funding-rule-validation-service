@@ -1,21 +1,31 @@
 using Azure.Data.Tables;
 using SFA.DAS.FundingRuleValidation.Jobs.Core;
+using SFA.DAS.FundingRuleValidation.Jobs.Domain;
 
 namespace SFA.DAS.FundingRuleValidation.Jobs.Data.TableStorage;
 
 public class TableStorageRulesRepository(TableServiceClient tableServiceClient): IRulesRepository
 {
-    public async Task<List<Domain.FundingRule>> GetActiveRulesForDate(DateTime date)
+    public async Task<List<FundingRule>> GetActiveRulesForDatesAsync(List<DateTime> dates, CancellationToken cancellationToken = default)
     {
-        var client = tableServiceClient.GetTableClient(Constants.FundingRulesTableName);
-        var pages = client.QueryAsync<FundingRuleTableEntity>();
+        var rules = await FetchRulesAsync(dates, cancellationToken);
+        return rules.Select(x => x.ToDomain()).ToList();
+    }
 
-        var results = new List<FundingRuleTableEntity>();
-        await foreach (var page in pages.AsPages())
+    private async Task<List<FundingRuleTableEntity>> FetchRulesAsync(List<DateTime> dates, CancellationToken cancellationToken)
+    {
+        var ruleClient = tableServiceClient.GetTableClient(GlobalConstants.FundingRulesTableName);
+
+        var filters = dates.Select(date => $"(EffectiveFrom le datetime'{date:o}' and EffectiveTo ge datetime'{date:o}')");
+        var filter = $"({string.Join(" or ", filters)}) and Enabled eq true";
+
+        var rulesPages = ruleClient.QueryAsync<FundingRuleTableEntity>(filter, cancellationToken: cancellationToken);
+        var rules = new List<FundingRuleTableEntity>();
+        await foreach (var page in rulesPages.AsPages().WithCancellation(cancellationToken))
         {
-            results.AddRange(page.Values);
+            rules.AddRange(page.Values);
         }
-        
-        return results.ToDomain().ToList();
+
+        return rules;
     }
 }

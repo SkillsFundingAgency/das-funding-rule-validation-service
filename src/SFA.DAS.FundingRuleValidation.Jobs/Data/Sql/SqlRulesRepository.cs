@@ -5,9 +5,16 @@ namespace SFA.DAS.FundingRuleValidation.Jobs.Data.Sql;
 
 public class SqlRulesRepository(IFundingRulesDataContext dbContext): IRulesRepository
 {
-    public async Task<List<FundingRule>> GetActiveRulesForDate(DateTime date)
+    public async Task<List<FundingRule>> GetActiveRulesForDatesAsync(List<DateTime> dates, CancellationToken cancellationToken = default)
     {
-        var rules = await dbContext.FundingRules.ToListAsync();
-        return rules.ToDomain().ToList();
+        var query = dbContext
+            .FundingRules
+            .Include(x => x.CourseAssociations).AsQueryable();
+
+        query = query.Where(x => x.Enabled);
+        query = dates.Aggregate(query, (current, date) => current.Where(x => x.EffectiveFrom <= date && x.EffectiveTo >= date));
+
+        var rules = await query.ToListAsync(cancellationToken);
+        return rules.ToDomain();
     }
 }

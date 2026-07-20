@@ -18,7 +18,7 @@ public class FakeHttpRequestData(FunctionContext functionContext) : HttpRequestD
     public override Stream Body { get; } = new MemoryStream();
     public override HttpHeadersCollection Headers => [];
     public override IReadOnlyCollection<IHttpCookie> Cookies => [];
-    public override Uri Url => new Uri("http://localhost/api/fundingRules");
+    public override Uri Url => new("http://localhost/api/fundingRules");
     public override IEnumerable<ClaimsIdentity> Identities => [];
     public override string Method => "POST";
 }

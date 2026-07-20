@@ -4,5 +4,5 @@ namespace SFA.DAS.FundingRuleValidation.Jobs.Data;
 
 public interface IRulesRepository
 {
-    Task<List<FundingRule>> GetActiveRulesForDate(DateTime date);
+    Task<List<FundingRule>> GetActiveRulesForDatesAsync(List<DateTime> dates, CancellationToken cancellationToken = default);
 }
