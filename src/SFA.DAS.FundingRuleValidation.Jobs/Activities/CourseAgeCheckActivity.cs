@@ -21,6 +21,7 @@ public class CourseAgeCheckActivity(ILogger<CourseAgeCheckActivity> logger)
                     return new RuleCourseOutcome(
                         ruleData.Rule.Id,
                         ruleData.Rule.IlrRuleName,
+                        ruleData.Rule.IlrRuleDescription,
                         x.Id,
                         x.AimSequenceNumber,
                         RuleOutcome.Error,
@@ -31,6 +32,7 @@ public class CourseAgeCheckActivity(ILogger<CourseAgeCheckActivity> logger)
                 return new RuleCourseOutcome(
                     ruleData.Rule.Id,
                     ruleData.Rule.IlrRuleName,
+                    ruleData.Rule.IlrRuleDescription,
                     x.Id,
                     x.AimSequenceNumber,
                     RuleOutcome.Success,

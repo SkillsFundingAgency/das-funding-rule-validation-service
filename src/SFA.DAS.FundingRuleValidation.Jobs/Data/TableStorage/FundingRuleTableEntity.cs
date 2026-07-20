@@ -9,6 +9,7 @@ public class FundingRuleTableEntity : ITableEntity
     public string RowKey { get; set; }
     public string RuleName { get; set; }
     public string IlrRuleName { get; set; }
+    public string IlrRuleDescription { get; set; }
     public bool Enabled { get; set; }
     public DateTime EffectiveFrom { get; set; }
     public DateTime EffectiveTo { get; set; }
