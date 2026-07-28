@@ -6,18 +6,24 @@ using SFA.DAS.FundingRuleValidation.Jobs.Domain;
 
 namespace SFA.DAS.FundingRuleValidation.Jobs.Activities;
 
-public class CourseAgeCheckActivity(ILogger<CourseAgeCheckActivity> logger)
+public partial class CourseAgeCheckActivity(ILogger<CourseAgeCheckActivity> logger)
 {
     [Function(nameof(CourseAgeCheckActivity))]
     public List<RuleCourseOutcome> Run([ActivityTrigger] RuleData ruleData, FunctionContext executionContext)
     {
+        using var scope = logger.BeginScope(new Dictionary<string, string>
+        {
+            { "CorrelationId", ruleData.Command.CorrelationId },
+            { "WaitingInstanceId", ruleData.Command.WaitingInstanceId },
+        });
+
         var parameters = JsonSerializer.Deserialize<CourseAgeCheckParameters>(ruleData.Rule.Parameters)!;
         return ruleData.Command.Courses
             .Select(x =>
             {
                 if (parameters.MinimumAge > x.AgeAtStartOfCourse || x.AgeAtStartOfCourse > parameters.MaximumAge)
                 {
-                    logger.LogInformation("CourseAgeCheckActivity failed for course {CourseId}-{AimSequenceNumber}", x.Id, x.AimSequenceNumber);
+                    LogCourseCheckFailed(x.Id, x.AimSequenceNumber);
                     return new RuleCourseOutcome(
                         ruleData.Rule.Id,
                         ruleData.Rule.IlrRuleName,
@@ -27,8 +33,8 @@ public class CourseAgeCheckActivity(ILogger<CourseAgeCheckActivity> logger)
                         RuleOutcome.Error,
                         [new FundingRestriction(nameof(Course.AgeAtStartOfCourse), x.AgeAtStartOfCourse.ToString())]);
                 }
-                
-                logger.LogInformation("CourseAgeCheckActivity passed for course {CourseId}-{AimSequenceNumber}", x.Id, x.AimSequenceNumber);
+            
+                LogCourseCheckPassed(x.Id, x.AimSequenceNumber);
                 return new RuleCourseOutcome(
                     ruleData.Rule.Id,
                     ruleData.Rule.IlrRuleName,
@@ -39,5 +45,11 @@ public class CourseAgeCheckActivity(ILogger<CourseAgeCheckActivity> logger)
                     []);
             })
             .ToList();
-    } 
+    }
+
+    [LoggerMessage(LogLevel.Debug, "CourseAgeCheckActivity failed for course {CourseId}-{AimSequenceNumber}")]
+    partial void LogCourseCheckFailed(string courseId, int aimSequenceNumber);
+
+    [LoggerMessage(LogLevel.Debug, "CourseAgeCheckActivity passed for course {CourseId}-{AimSequenceNumber}")]
+    partial void LogCourseCheckPassed(string courseId, int aimSequenceNumber);
 }

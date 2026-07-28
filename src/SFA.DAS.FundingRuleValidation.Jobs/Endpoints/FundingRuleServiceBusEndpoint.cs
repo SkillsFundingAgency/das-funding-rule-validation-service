@@ -20,7 +20,7 @@ public class FundingRuleServiceBusEndpoint
         ValidateLearnerCommand? command;
         try
         {
-            command = JsonSerializer.Deserialize<ValidateLearnerCommand>(message.Body);
+            command = JsonSerializer.Deserialize<ValidateLearnerCommand>(message.Body) ?? throw new Exception();
         }
         catch
         {

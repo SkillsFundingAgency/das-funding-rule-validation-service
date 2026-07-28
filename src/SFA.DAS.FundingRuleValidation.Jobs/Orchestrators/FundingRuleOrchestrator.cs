@@ -7,16 +7,21 @@ using SFA.DAS.FundingRuleValidation.Jobs.Domain;
 
 namespace SFA.DAS.FundingRuleValidation.Jobs.Orchestrators;
 
-public static class FundingRuleOrchestrator
+public static partial class FundingRuleOrchestrator
 {
     [Function(nameof(ApplyFundingRules))]
     public static async Task ApplyFundingRules([OrchestrationTrigger] TaskOrchestrationContext context)
     {
         ILogger logger = context.CreateReplaySafeLogger(nameof(ApplyFundingRules));
         var command = context.GetInput<ValidateLearnerCommand>()!;
+        using var scope = logger.BeginScope(new Dictionary<string, string>
+        {
+            { "CorrelationId", command.CorrelationId },
+            { "WaitingInstanceId", command.WaitingInstanceId },
+        });
+
         var status = ValidationStatus.SystemError;
         List<RuleCourseOutcome> outputs = [];
-        
         try
         {
             // Fetch all rules for all courses enabled for the specified dates
@@ -31,7 +36,7 @@ public static class FundingRuleOrchestrator
                 status = ValidationStatus.Passed;
                 goto Finished;
             }
-            
+
             foreach (var rule in rules)
             {
                 // get only the courses for the rule
@@ -42,14 +47,14 @@ public static class FundingRuleOrchestrator
                 // send only the applicable data
                 var ruleCommand = command with { Courses = courses };
 
-                logger.LogInformation("Calling {RuleName} with courses: {Courses}", rule.RuleName, courses.Select(x => x.Id));
+                logger.LogRuleInvocation(rule.RuleName, courses.Select(x => x.Id));
                 var outcomes = await context.CallActivityAsync<List<RuleCourseOutcome>>(rule.RuleName, new RuleData(rule, ruleCommand), GlobalConstants.TaskOptions);
                 if (outcomes is { Count: > 0 })
                 {
                     outputs.AddRange(outcomes);
                 }
             }
-            
+
             status = outputs.All(x => x.Outcome == RuleOutcome.Success)
                 ? ValidationStatus.Passed
                 : ValidationStatus.Failed;
@@ -69,4 +74,7 @@ public static class FundingRuleOrchestrator
         rule.CourseIds.Contains(x.Id)
         && x.StartDate >= rule.EffectiveFrom
         && x.StartDate <= rule.EffectiveTo;
+
+    [LoggerMessage(LogLevel.Information, "Calling {RuleName} with courses: {Courses}")]
+    static partial void LogRuleInvocation(this ILogger logger, string ruleName, IEnumerable<string> courses);
 }
