@@ -63,12 +63,12 @@ public static class HostBuilderExtensions
             // services.AddTransient<IRulesRepository, SqlRulesRepository>();
 
             // service bus
-            services.AddSingleton(_ =>
+            services.AddSingleton(sp =>
             {
-                var fqdn = builder.Configuration[$"{GlobalConstants.ServiceBusConnectionName}:fullyQualifiedNamespace"];
-                if (fqdn != null)
-                    return new ServiceBusClient(fqdn, new DefaultAzureCredential());
-                return new ServiceBusClient(builder.Configuration[GlobalConstants.ServiceBusConnectionName]!);
+                var config = sp.GetRequiredService<IConfiguration>();
+                var fqdn = config[$"{GlobalConstants.ServiceBusConnectionName}:fullyQualifiedNamespace"]
+                           ?? config[GlobalConstants.ServiceBusConnectionName]!;
+                return new ServiceBusClient(fqdn, new DefaultAzureCredential());
             });
             
             return builder;
