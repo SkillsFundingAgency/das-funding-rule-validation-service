@@ -66,8 +66,7 @@ public static class HostBuilderExtensions
             services.AddSingleton(sp =>
             {
                 var config = sp.GetRequiredService<IConfiguration>();
-                var fqdn = config[$"{GlobalConstants.ServiceBusConnectionName}:fullyQualifiedNamespace"]
-                           ?? config[GlobalConstants.ServiceBusConnectionName]!;
+                var fqdn = config[$"{GlobalConstants.ServiceBusConnectionName}:fullyQualifiedNamespace"]!;
                 return new ServiceBusClient(fqdn, new DefaultAzureCredential());
             });
             
