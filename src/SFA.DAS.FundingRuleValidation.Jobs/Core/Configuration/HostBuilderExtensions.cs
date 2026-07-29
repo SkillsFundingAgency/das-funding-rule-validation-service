@@ -51,21 +51,25 @@ public static class HostBuilderExtensions
         {
             var services = builder.Services;
             var connectionStrings = builder.Configuration.GetSection("ConnectionStrings").Get<ConnectionStringsConfiguration>();
-            var serviceBusConnectionString = builder.Configuration[GlobalConstants.ServiceBusConnectionName];
-            
             // IMPORTANT: use only one of the following storage mechanisms
-            
+
             // table storage
             services.AddTransient(_ => new TableServiceClient(connectionStrings?.TableStorageConnectionString));
             services.AddTransient<IRulesRepository, TableStorageRulesRepository>();
-            
-            // sql server 
+
+            // sql server
             // services.AddDbContext<FundingRulesDbContext>(options => options.UseSqlServer(connectionStrings?.SqlConnectionString));
             // services.AddTransient<IFundingRulesDataContext, FundingRulesDbContext>();
             // services.AddTransient<IRulesRepository, SqlRulesRepository>();
-            
+
             // service bus
-            services.AddSingleton(_ => new ServiceBusClient(serviceBusConnectionString, new DefaultAzureCredential()));
+            services.AddSingleton(_ =>
+            {
+                var fqdn = builder.Configuration[$"{GlobalConstants.ServiceBusConnectionName}:fullyQualifiedNamespace"];
+                if (fqdn != null)
+                    return new ServiceBusClient(fqdn, new DefaultAzureCredential());
+                return new ServiceBusClient(builder.Configuration[GlobalConstants.ServiceBusConnectionName]!);
+            });
             
             return builder;
         }
