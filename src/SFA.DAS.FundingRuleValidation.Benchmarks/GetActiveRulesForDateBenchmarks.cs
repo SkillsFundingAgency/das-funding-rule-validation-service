@@ -1,10 +1,12 @@
-﻿using Azure.Data.Tables;
+﻿using System.Text.Json;
+using Azure.Data.Tables;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Order;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using SFA.DAS.FundingRuleValidation.Jobs.Activities;
+using SFA.DAS.FundingRuleValidation.Jobs.Activities.Models;
 using SFA.DAS.FundingRuleValidation.Jobs.Core;
 using SFA.DAS.FundingRuleValidation.Jobs.Data.Sql;
 using SFA.DAS.FundingRuleValidation.Jobs.Data.TableStorage;
@@ -23,8 +25,12 @@ public class GetActiveRulesForDateBenchmarks
     private TableStorageRulesRepository _tableStorageRulesRepository = null!;
     private FundingRulesDbContext _dbContext = null!;
     private TableServiceClient _tableServiceClient = null!;
-    
-    private DateTime _date;
+
+    private readonly List<DateTime> _dates = [
+        DateTime.UtcNow.Date.AddDays(-10).Date,
+        DateTime.UtcNow.Date,
+        DateTime.UtcNow.Date.AddDays(10).Date
+    ];
 
     [GlobalSetup]
     public async Task GlobalSetup()
@@ -60,8 +66,6 @@ public class GetActiveRulesForDateBenchmarks
         _sqlRulesRepository = new SqlRulesRepository(_dbContext);
         _tableStorageRulesRepository = new TableStorageRulesRepository(_tableServiceClient);
 
-        _date = DateTime.UtcNow.Date;
-
         await InitialiseData();
         await WarmUpRepositories();
     }
@@ -70,14 +74,14 @@ public class GetActiveRulesForDateBenchmarks
     [Benchmark(Baseline = true)]
     public async Task<List<FundingRule>> SqlServer()
     {
-        return await _sqlRulesRepository.GetActiveRulesForDate(_date);
+        return await _sqlRulesRepository.GetActiveRulesForDatesAsync(_dates);
     }
 
     [BenchmarkCategory("GetActiveRulesForDate")]
     [Benchmark]
     public async Task<List<FundingRule>> AzureTableStorage()
     {
-        return await _tableStorageRulesRepository.GetActiveRulesForDate(_date);
+        return await _tableStorageRulesRepository.GetActiveRulesForDatesAsync(_dates);
     }
 
     [GlobalCleanup]
@@ -86,29 +90,63 @@ public class GetActiveRulesForDateBenchmarks
         await _dbContext.DisposeAsync();
     }
 
+    private static List<FundingRuleCourseAssociationsEntity> GenerateSqlCourseAssociations(Guid fundingRuleId) 
+        => Enumerable
+                .Range(1, Random.Shared.Next(1, 200))
+                .Select(_ => new FundingRuleCourseAssociationsEntity
+                {
+                    FundingRuleId = fundingRuleId,
+                    CourseId = Guid.NewGuid().ToString(),
+                })
+                .ToList();
+
     private async Task InitialiseData()
     {
-        // SQL Server
+        // delete data
+        await _dbContext.CourseAssociations.ExecuteDeleteAsync();
         await _dbContext.FundingRules.ExecuteDeleteAsync();
-        var sqlEntity = new FundingRuleEntity
-        {
-            Id = Guid.NewGuid(),
-            RuleName = nameof(CourseAgeCheckActivity.CourseAgeCheck)
-        };
-        _dbContext.FundingRules.Add(sqlEntity);
-        await _dbContext.SaveChangesAsync();
         
-        // Table storage
-        var client = _tableServiceClient.GetTableClient(Constants.FundingRulesTableName);
-        await client.CreateIfNotExistsAsync();
-        await DeleteAllTableStorageRowsAsync(client);
-        var tsEntity = new FundingRuleTableEntity
+        var fundingRuleClient = _tableServiceClient.GetTableClient(GlobalConstants.FundingRulesTableName);
+        await fundingRuleClient.CreateIfNotExistsAsync();
+        await DeleteAllTableStorageRowsAsync(fundingRuleClient);
+        
+        var courseAssociationsClient = _tableServiceClient.GetTableClient(GlobalConstants.FundingRuleCourseAssociationsTableName);
+        await courseAssociationsClient.CreateIfNotExistsAsync();
+        await DeleteAllTableStorageRowsAsync(courseAssociationsClient);
+
+        // add data
+        for (var index = 0; index < 500; index++)
         {
-            PartitionKey = "LOCAL",
-            RowKey = sqlEntity.Id.ToString(),
-            RuleName = sqlEntity.RuleName
-        };
-        await client.AddEntityAsync(tsEntity);
+            var fundingRuleId = Guid.NewGuid();
+            var sqlCourseAssociations = GenerateSqlCourseAssociations(fundingRuleId);
+            var pointInTime = DateTime.UtcNow.AddDays(Random.Shared.Next(-50, 50));
+            var sqlFundingRule = new FundingRuleEntity
+            {
+                Id = fundingRuleId,
+                RuleName = $"{nameof(CourseAgeCheckActivity)}_{index+1}",
+                Enabled = true,
+                EffectiveFrom = pointInTime.AddDays(-Random.Shared.Next(1, 10)).Date,
+                EffectiveTo = pointInTime.AddDays(Random.Shared.Next(1, 10)).Date,
+                Parameters = JsonSerializer.Serialize(new CourseAgeCheckParameters { MinimumAge = 0, MaximumAge = 24 }),
+                CourseAssociations = sqlCourseAssociations
+            };
+            _dbContext.FundingRules.Add(sqlFundingRule);
+            
+            var tsFundingRule = new FundingRuleTableEntity
+            {
+                PartitionKey = "LOCAL",
+                RowKey = sqlFundingRule.Id.ToString(),
+                RuleName = sqlFundingRule.RuleName,
+                Enabled = true,
+                EffectiveFrom = sqlFundingRule.EffectiveFrom,
+                EffectiveTo = sqlFundingRule.EffectiveTo,
+                Parameters = sqlFundingRule.Parameters,
+                Courses = JsonSerializer.Serialize(sqlCourseAssociations.Select(x => x.CourseId))
+            };
+            await fundingRuleClient.AddEntityAsync(tsFundingRule);
+        }
+        
+        await _dbContext.SaveChangesAsync();
     }
     
     public static async Task DeleteAllTableStorageRowsAsync(TableClient tableClient)
@@ -132,7 +170,7 @@ public class GetActiveRulesForDateBenchmarks
     
     private async Task WarmUpRepositories()
     {
-        await _sqlRulesRepository.GetActiveRulesForDate(_date);
-        await _tableStorageRulesRepository.GetActiveRulesForDate(_date);
+        await _sqlRulesRepository.GetActiveRulesForDatesAsync(_dates);
+        await _tableStorageRulesRepository.GetActiveRulesForDatesAsync(_dates);
     }
 }

@@ -4,7 +4,7 @@ namespace SFA.DAS.FundingRuleValidation.UnitTests.Jobs.Data.Sql;
 
 public class WhenMappingAFundingRuleEntity
 {
-    [Test, MoqAutoData]
+    [Test, RecursiveMoqAutoData]
     public void Then_The_Funding_Rule_Is_Mapped_To_The_Domain_Correctly(FundingRuleEntity entity)
     {
         // act
@@ -14,7 +14,7 @@ public class WhenMappingAFundingRuleEntity
         result.Should().BeEquivalentTo(entity, o => o.ExcludingMissingMembers());
     }
     
-    [Test, MoqAutoData]
+    [Test, RecursiveMoqAutoData]
     public void Then_Multiple_Funding_Rules_Are_Mapped_Correctly(List<FundingRuleEntity> entities)
     {
         // act

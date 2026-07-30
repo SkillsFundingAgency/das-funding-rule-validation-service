@@ -1,3 +1,3 @@
 ﻿namespace SFA.DAS.FundingRuleValidation.Jobs.Domain;
 
-public record RuleOutcome(string RuleName, IEnumerable<FundingRestriction> FundingRestrictions);
+public record RuleOutcome(Guid RuleId, string RuleName, IEnumerable<FundingRestriction> FundingRestrictions);
