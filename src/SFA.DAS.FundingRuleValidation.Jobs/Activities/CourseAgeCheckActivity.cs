@@ -47,9 +47,9 @@ public partial class CourseAgeCheckActivity(ILogger<CourseAgeCheckActivity> logg
             .ToList();
     }
 
-    [LoggerMessage(LogLevel.Debug, "CourseAgeCheckActivity failed for course {CourseId}-{AimSequenceNumber}")]
+    [LoggerMessage(LogLevel.Information, "CourseAgeCheckActivity failed for course {CourseId}-{AimSequenceNumber}")]
     partial void LogCourseCheckFailed(string courseId, int aimSequenceNumber);
 
-    [LoggerMessage(LogLevel.Debug, "CourseAgeCheckActivity passed for course {CourseId}-{AimSequenceNumber}")]
+    [LoggerMessage(LogLevel.Information, "CourseAgeCheckActivity passed for course {CourseId}-{AimSequenceNumber}")]
     partial void LogCourseCheckPassed(string courseId, int aimSequenceNumber);
 }

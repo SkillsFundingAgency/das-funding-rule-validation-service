@@ -21,9 +21,9 @@ public partial class GetActiveRulesForDatesActivity(IRulesRepository rulesReposi
         return result;
     }
 
-    [LoggerMessage(LogLevel.Debug, "Returned the following rules for dates: {QueryDate:o} '{RuleNames}'")]
+    [LoggerMessage(LogLevel.Information, "Returned the following rules for dates: {QueryDate:o} '{RuleNames}'")]
     partial void LogFoundRules(string queryDate, string ruleNames);
 
-    [LoggerMessage(LogLevel.Debug, "Returned no rules for dates: {QueryDate:o}")]
+    [LoggerMessage(LogLevel.Information, "Returned no rules for dates: {QueryDate:o}")]
     partial void LogNoRules(string queryDate);
 }

@@ -5,6 +5,7 @@ using Azure.Messaging.ServiceBus;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SFA.DAS.FundingRuleValidation.Jobs.Data;
 using SFA.DAS.FundingRuleValidation.Jobs.Data.TableStorage;
@@ -43,6 +44,7 @@ public static class HostBuilderExtensions
 
         private FunctionsApplicationBuilder RegisterServices()
         {
+            builder.Logging.AddOpenTelemetry(opt => opt.IncludeScopes = true);
             builder.Services.AddOpenTelemetryRegistration(builder.Configuration.GetValue<string>("APPLICATIONINSIGHTS_CONNECTION_STRING"));
             return builder;
         }

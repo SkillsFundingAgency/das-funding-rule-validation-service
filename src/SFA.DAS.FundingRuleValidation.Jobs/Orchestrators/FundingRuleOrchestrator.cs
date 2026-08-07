@@ -30,7 +30,7 @@ public static partial class FundingRuleOrchestrator
                 command.Courses.Select(x => x.StartDate.Date).Distinct().ToList(),
                 GlobalConstants.TaskOptions);
 
-            if (rules is { Count: 0 })
+            if (rules is not { Count: > 0 })
             {
                 logger.LogInformation("No active matching rules found");
                 status = ValidationStatus.Passed;
