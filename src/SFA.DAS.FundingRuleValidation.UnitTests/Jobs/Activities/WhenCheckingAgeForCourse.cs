@@ -46,13 +46,20 @@ public class WhenCheckingAgeForCourse
     {
         parameters.MinimumAge = 20;
         parameters.MaximumAge = 30;
-        ruleData.Rule.CourseIds = ["Course1"];
+        ruleData.Rule.CourseIds = ["838"];
         ruleData.Rule.Parameters = JsonSerializer.Serialize(parameters);
         ruleData = ruleData with
         {
             Command = ruleData.Command with
             {
-                Courses = [new Course { Id = "Course1", AimSequenceNumber = 3, AgeAtStartOfCourse = age, }]
+                Courses = [new Course
+                {
+                    Id = "ClassCourseId",
+                    AimSequenceNumber = 3,
+                    AgeAtStartOfCourse = age,
+                    TrainingType = TrainingType.Standard,
+                    StandardCode = 838
+                }]
             }
         };
         
@@ -78,15 +85,15 @@ public class WhenCheckingAgeForCourse
     {
         parameters.MinimumAge = 20;
         parameters.MaximumAge = 30;
-        ruleData.Rule.CourseIds = ["Course1", "Course2"];
+        ruleData.Rule.CourseIds = ["838"];
         ruleData.Rule.Parameters = JsonSerializer.Serialize(parameters);
         ruleData = ruleData with
         {
             Command = ruleData.Command with
             {
                 Courses = [
-                    new Course { Id = "Course1", AimSequenceNumber = 3, AgeAtStartOfCourse = 50, },
-                    new Course { Id = "Course2", AimSequenceNumber = 4, AgeAtStartOfCourse = 50, }
+                    new Course { Id = "Course1", AimSequenceNumber = 3, AgeAtStartOfCourse = 50, StandardCode = 838, TrainingType = TrainingType.Standard },
+                    new Course { Id = "Course2", AimSequenceNumber = 4, AgeAtStartOfCourse = 50, StandardCode = 838, TrainingType = TrainingType.Standard }
                 ]
             }
         };
@@ -101,6 +108,42 @@ public class WhenCheckingAgeForCourse
             x.CourseId.Should().BeOneOf("Course1", "Course2");
             x.AimSequenceNumber.Should().BeOneOf(3, 4);
             x.Outcome.Should().Be(RuleOutcome.Error);
+            x.RuleId.Should().Be(ruleData.Rule.Id);
+            x.RuleName.Should().Be(ruleData.Rule.IlrRuleName);
+        });
+    }
+    
+    [Test, MoqAutoData]
+    public void Then_The_Rule_Should_Ignore_Non_Standard_Courses(
+        RuleData ruleData,
+        CourseAgeCheckParameters parameters,
+        [Greedy] CourseAgeCheckActivity sut)
+    {
+        parameters.MinimumAge = 20;
+        parameters.MaximumAge = 30;
+        ruleData.Rule.CourseIds = ["838"];
+        ruleData.Rule.Parameters = JsonSerializer.Serialize(parameters);
+        ruleData = ruleData with
+        {
+            Command = ruleData.Command with
+            {
+                Courses = [
+                    new Course { Id = "Course1", AimSequenceNumber = 3, AgeAtStartOfCourse = 50, StandardCode = null, TrainingType = TrainingType.ShortCourse },
+                    new Course { Id = "Course2", AimSequenceNumber = 4, AgeAtStartOfCourse = 50, StandardCode = null, TrainingType = TrainingType.ShortCourse }
+                ]
+            }
+        };
+        
+        // act
+        var result = sut.Run(ruleData, null!);
+        
+        // assert
+        result.Should().HaveCount(2);
+        result.Should().AllSatisfy(x =>
+        {
+            x.CourseId.Should().BeOneOf("Course1", "Course2");
+            x.AimSequenceNumber.Should().BeOneOf(3, 4);
+            x.Outcome.Should().Be(RuleOutcome.Success);
             x.RuleId.Should().Be(ruleData.Rule.Id);
             x.RuleName.Should().Be(ruleData.Rule.IlrRuleName);
         });

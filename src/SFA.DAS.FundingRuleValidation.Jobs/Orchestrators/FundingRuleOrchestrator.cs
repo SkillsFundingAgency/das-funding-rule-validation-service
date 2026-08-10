@@ -40,7 +40,7 @@ public static partial class FundingRuleOrchestrator
             foreach (var rule in rules)
             {
                 // get only the courses for the rule
-                var courses = command.Courses.Where(CourseSelector(rule)).ToList();
+                var courses = command.Courses.Where(x => x.StartDate >= rule.EffectiveFrom && x.StartDate <= rule.EffectiveTo).ToList();
 
                 if (courses.Count == 0) continue;
 
@@ -69,11 +69,6 @@ public static partial class FundingRuleOrchestrator
         var result = new ValidateLearnerResult(command.CorrelationId, command.WaitingInstanceId, command.Ukprn, command.Uln, status, outputs);
         await context.CallActivityAsync(nameof(SendValidationResultActivity), result, GlobalConstants.TaskOptions);
     }
-
-    private static Func<Course, bool> CourseSelector(FundingRule rule) => x =>
-        rule.CourseIds.Contains(x.Id)
-        && x.StartDate >= rule.EffectiveFrom
-        && x.StartDate <= rule.EffectiveTo;
 
     [LoggerMessage(LogLevel.Information, "Calling {RuleName} with courses: {Courses}")]
     static partial void LogRuleInvocation(this ILogger logger, string ruleName, IEnumerable<string> courses);
