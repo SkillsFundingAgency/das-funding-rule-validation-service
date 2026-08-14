@@ -85,9 +85,6 @@
             "type": "string",
             "defaultValue": "Standard"
         },
-        "databaseConnectionString": {
-            "type": "securestring"
-        },
         "EnableRouteTableAssociation": {
             "type": "bool",
             "defaultValue": false
@@ -319,10 +316,6 @@
                                 {
                                     "name": "AzureWebJobsStorage",
                                     "value": "[parameters('sharedStorageAccountConnectionString')]"
-                                },
-                                {
-                                    "name": "ConnectionStrings__SqlConnectionString",
-                                    "value": "[parameters('databaseConnectionString')]"
                                 },
                                 {
                                     "name": "ConnectionStrings__TableStorageConnectionString",
