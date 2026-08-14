@@ -13,11 +13,23 @@
             "default": "Information",
             "Host": "Information",
             "Function": "Information"
+        },
+        "openTelemetry": {
+            "includeScopes": true            
+        },
+        "console": {
+            "includeScopes": true
         }
     },
     "extensions": {
         "serviceBus": {
             "autoCompleteMessages": true
+        },
+        "durableTask": {
+            "tracing": {
+                "distributedTracingEnabled": true,
+                "version": "V2"
+            }
         }
     }
 }

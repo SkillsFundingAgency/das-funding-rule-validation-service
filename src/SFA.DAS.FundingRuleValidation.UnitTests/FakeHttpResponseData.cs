@@ -1,7 +1,9 @@
-﻿using System.Net;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 
+[assembly: ExcludeFromCodeCoverage]
 namespace SFA.DAS.FundingRuleValidation.UnitTests;
 
 public class FakeHttpResponseData(FunctionContext functionContext) : HttpResponseData(functionContext)

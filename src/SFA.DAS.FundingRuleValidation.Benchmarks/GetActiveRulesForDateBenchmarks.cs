@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using Azure.Data.Tables;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
@@ -12,6 +13,7 @@ using SFA.DAS.FundingRuleValidation.Jobs.Data.Sql;
 using SFA.DAS.FundingRuleValidation.Jobs.Data.TableStorage;
 using SFA.DAS.FundingRuleValidation.Jobs.Domain;
 
+[assembly: ExcludeFromCodeCoverage]
 namespace SFA.DAS.FundingRuleValidation.Benchmarks;
 
 [MemoryDiagnoser]
@@ -123,6 +125,8 @@ public class GetActiveRulesForDateBenchmarks
             var sqlFundingRule = new FundingRuleEntity
             {
                 Id = fundingRuleId,
+                IlrRuleName = $"Rule_{nameof(CourseAgeCheckActivity)}_{index+1}",
+                IlrRuleDescription = $"Rule_Description_{nameof(CourseAgeCheckActivity)}_{index+1}",
                 RuleName = $"{nameof(CourseAgeCheckActivity)}_{index+1}",
                 Enabled = true,
                 EffectiveFrom = pointInTime.AddDays(-Random.Shared.Next(1, 10)).Date,
