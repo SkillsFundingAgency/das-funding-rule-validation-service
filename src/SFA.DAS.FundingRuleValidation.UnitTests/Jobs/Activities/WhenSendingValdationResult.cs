@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.Logging;
 using SFA.DAS.FundingRuleValidation.Jobs.Activities;
 using SFA.DAS.FundingRuleValidation.Jobs.Core;
 using SFA.DAS.FundingRuleValidation.Jobs.Domain;
@@ -28,7 +29,7 @@ public class WhenSendingValdationResult
             .Callback<ServiceBusMessage, CancellationToken>((x, _) => capturedMessage = x)
             .Returns(Task.CompletedTask);
 
-        var sut = new SendValidationResultActivity(client.Object);
+        var sut = new SendValidationResultActivity(client.Object, Mock.Of<ILogger<SendValidationResultActivity>>());
         
         // act
         await sut.Run(result, fakeContext.Object);

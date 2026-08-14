@@ -16,7 +16,7 @@ public class TableStorageRulesRepository(TableServiceClient tableServiceClient):
     {
         var ruleClient = tableServiceClient.GetTableClient(GlobalConstants.FundingRulesTableName);
 
-        var filters = dates.Select(date => $"(EffectiveFrom le '{date:o}' and EffectiveTo ge '{date:o}')");
+        var filters = dates.Select(date => $"(EffectiveFrom le datetime'{date:o}' and EffectiveTo ge datetime'{date:o}')");
         var filter = $"({string.Join(" or ", filters)}) and Enabled eq true";
 
         var rulesPages = ruleClient.QueryAsync<FundingRuleTableEntity>(filter, cancellationToken: cancellationToken);

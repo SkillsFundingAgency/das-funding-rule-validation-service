@@ -13,6 +13,8 @@ public static class DomainMappers
             {
                 Id = Guid.Parse(entity.RowKey),
                 RuleName = entity.RuleName,
+                IlrRuleName = entity.IlrRuleName,
+                IlrRuleDescription = entity.IlrRuleDescription,
                 EffectiveFrom = entity.EffectiveFrom,
                 EffectiveTo = entity.EffectiveTo,
                 Parameters = entity.Parameters,

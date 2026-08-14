@@ -17,13 +17,18 @@ public class FundingRuleServiceBusEndpoint
         [DurableClient] DurableTaskClient client,
         FunctionContext executionContext)
     {
-        var command = JsonSerializer.Deserialize<ValidateLearnerCommand>(message.Body);
-        if (command is null || command.CorrelationId == Guid.Empty)
+        ValidateLearnerCommand? command;
+        try
+        {
+            command = JsonSerializer.Deserialize<ValidateLearnerCommand>(message.Body) ?? throw new Exception();
+        }
+        catch
         {
             throw new InvalidOperationException("Failed to deserialise ValidateLearnerMessage");
         }
+
         var logger = executionContext.GetLogger<FundingRuleServiceBusEndpoint>();
         var instanceId = await client.ScheduleNewOrchestrationInstanceAsync(nameof(FundingRuleOrchestrator.ApplyFundingRules), command);
-        logger.LogInformation("{InstanceId}: Started orchestration for correlated message '{CorrelationId}'", instanceId, command.CorrelationId);
+        logger.LogInformation("{CorrelationId}-{InstanceId}: Started orchestration", command?.CorrelationId, instanceId);
     }
 }

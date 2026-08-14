@@ -5,8 +5,6 @@ namespace SFA.DAS.FundingRuleValidation.Jobs.Domain;
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum TrainingType
 {
-    Apprenticeship,
-    FoundationApprenticeship,
-    MathsAndEnglish,
-    ApprenticeshipUnit,
+    Standard,    // ProgType 25
+    ShortCourse  // all other ProgTypes
 }
