@@ -71,7 +71,7 @@
             "defaultValue": "1"
         },
         "appServicePlanTier": {
-            "type": "string"
+            "type": "string",
             "defaultValue": "Standard"
         },
         "sharedSQLServerName": {
