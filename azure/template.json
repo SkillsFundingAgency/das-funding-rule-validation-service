@@ -70,6 +70,10 @@
             "type": "string",
             "defaultValue": "1"
         },
+        "appServicePlanTier": {
+            "type": "string"
+            "defaultValue": "Standard"
+        },
         "sharedSQLServerName": {
             "type": "string"
         },
@@ -180,6 +184,9 @@
                     },
                     "aspInstances": {
                         "value": "[parameters('appServicePlanInstances')]"
+                    },
+                    "nonASETier": {
+                        "value": "[parameters('appServicePlanTier')]"
                     }
                 }
             },
