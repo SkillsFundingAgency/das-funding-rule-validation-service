@@ -25,8 +25,8 @@ jobs:
             SubscriptionId: $(SubscriptionId)
             Location: $(ResourceGroupLocation)
             Environment: ${{ parameters.Environment }}
-            TemplatePath: $(Pipeline.Workspace)/${{ parameters.SolutionBaseName }}/azure/template.flex.json
-            ParametersPath: $(Pipeline.Workspace)/${{ parameters.SolutionBaseName }}/azure/template.flex.parameters.json
+            TemplatePath: $(Pipeline.Workspace)/${{ parameters.SolutionBaseName }}/azure/template.json
+            ParametersPath: $(Pipeline.Workspace)/${{ parameters.SolutionBaseName }}/azure/template.parameters.json
             IsMultiRepoCheckout: true
             TemplateSecrets:
               ConfigurationStorageConnectionString: $(ConfigurationStorageConnectionString)
@@ -55,11 +55,8 @@ jobs:
             SharedSQLServerName: $(SharedSQLServerName)
             SqlServerResourceGroupName: $(SharedEnvResourceGroup)
             FailoverGroupName: $(SharedSQLServerFailoverGroupName)
-        - task: AzureFunctionApp@2
-          displayName: Azure Function App Deploy (Flex Consumption) - $(FunctionAppName)
-          inputs:
-            azureSubscription: ${{ parameters.ServiceConnection }}
-            appType: functionAppLinux
-            isFlexConsumption: true
-            appName: $(FunctionAppName)
-            package: $(Pipeline.Workspace)/${{ parameters.SolutionBaseName }}/${{ parameters.SolutionBaseName }}.Jobs.zip
+        - template: azure-pipelines-templates/deploy/step/function-deploy-flex.yml@das-platform-building-blocks
+          parameters:
+            ServiceConnection: ${{ parameters.ServiceConnection }}
+            FunctionAppName: $(FunctionAppName)
+            DeploymentPackagePath: $(Pipeline.Workspace)/${{ parameters.SolutionBaseName }}/${{ parameters.SolutionBaseName }}.Jobs.zip
