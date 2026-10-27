@@ -116,10 +116,9 @@
         "resourceNamePrefix": "[toLower(concat('das-', parameters('resourceEnvironmentName'),'-', parameters('serviceName'), 'alt'))]",
         "resourceGroupName": "[concat(variables('resourceNamePrefix'), '-rg')]",
         "functionAppName": "[concat(variables('resourceNamePrefix'), '-fa')]",
-        "appServicePlanName": "[concat(variables('resourceNamePrefix'), '-asp')]",
-        "storageAccountName": "[toLower(replace(concat('das-', parameters('resourceEnvironmentName'), '-', parameters('serviceName'), 'str'), '-', ''))]",
+        "databaseName": "[concat(variables('resourceNamePrefix'), '-db')]",
+        "storageAccountName": "[toLower(replace(concat(variables('resourceNamePrefix'), 'str'), '-', ''))]",
         "flexStorageAccountName": "[toLower(replace(concat(variables('resourceNamePrefix'), 'flexstr'), '-', ''))]",
-        "databaseName": "[toLower(concat('das-', parameters('resourceEnvironmentName'), '-', parameters('serviceName'), '-db'))]",
         "privateLinkScopeName": "[toLower(concat('das-', parameters('resourceEnvironmentName'),'-shared-ampls'))]",
         "configNames": "SFA.DAS.FundingRuleValidation.Jobs",
         "subnetDelegations": [
