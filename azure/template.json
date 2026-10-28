@@ -116,9 +116,9 @@
         "resourceNamePrefix": "[toLower(concat('das-', parameters('resourceEnvironmentName'),'-', parameters('serviceName'), 'alt'))]",
         "resourceGroupName": "[concat(variables('resourceNamePrefix'), '-rg')]",
         "functionAppName": "[concat(variables('resourceNamePrefix'), '-fa')]",
+        "appServicePlanName": "[concat(variables('resourceNamePrefix'), '-asp')]",
         "databaseName": "[concat(variables('resourceNamePrefix'), '-db')]",
         "storageAccountName": "[toLower(replace(concat(variables('resourceNamePrefix'), 'str'), '-', ''))]",
-        "flexStorageAccountName": "[toLower(replace(concat(variables('resourceNamePrefix'), 'flexstr'), '-', ''))]",
         "privateLinkScopeName": "[toLower(concat('das-', parameters('resourceEnvironmentName'),'-shared-ampls'))]",
         "configNames": "SFA.DAS.FundingRuleValidation.Jobs",
         "subnetDelegations": [
@@ -264,36 +264,6 @@
         },
         {
             "apiVersion": "2021-04-01",
-            "name": "[concat(variables('flexStorageAccountName'), '-', parameters('utcValue'))]",
-            "type": "Microsoft.Resources/deployments",
-            "resourceGroup": "[variables('resourceGroupName')]",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[concat(variables('deploymentUrlBase'),'storage-account-arm.json')]",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "storageAccountName": {
-                        "value": "[variables('flexStorageAccountName')]"
-                    },
-                    "storageAccountLocation": {
-                        "value": "[parameters('resourceGroupLocation')]"
-                    },
-                    "accountType": {
-                        "value": "Standard_LRS"
-                    },
-                    "storageKind": {
-                        "value": "StorageV2"
-                    }
-                }
-            },
-            "dependsOn": [
-                "[variables('resourceGroupName')]"
-            ]
-        },
-        {
-            "apiVersion": "2021-04-01",
             "name": "[concat(variables('functionAppName'), '-', parameters('utcValue'))]",
             "type": "Microsoft.Resources/deployments",
             "resourceGroup": "[variables('resourceGroupName')]",
@@ -311,8 +281,9 @@
                         "value": "[variables('appServicePlanName')]"
                     },
                     "flexStorageAccountName": {
-                        "value": "[variables('flexStorageAccountName')]"
+                        "value": "[variables('storageAccountName')]"
                     },
+                    "subnetResourceId": {
                         "value": "[reference(concat(parameters('subnetObject').name, '-', parameters('utcValue'))).outputs.SubnetResourceId.value]"
                     },
                     "ipSecurityRestrictions": {
@@ -355,7 +326,7 @@
                                 },
                                 {
                                     "name": "AzureWebJobsStorage",
-                                    "value": "[reference(concat(variables('flexStorageAccountName'), '-', parameters('utcValue'))).outputs.storageConnectionString.value]"
+                                    "value": "[reference(concat(variables('storageAccountName'), '-', parameters('utcValue'))).outputs.storageConnectionString.value]"
                                 },
                                 {
                                     "name": "AzureWebJobsServiceBus__fullyQualifiedNamespace",
@@ -385,8 +356,7 @@
             "dependsOn": [
                 "[variables('resourceGroupName')]",
                 "[concat(variables('functionAppName'), '-application-insights-', parameters('utcValue'))]",
-                "[concat(variables('storageAccountName'), '-', parameters('utcValue'))]",
-                "[concat(variables('flexStorageAccountName'), '-', parameters('utcValue'))]"
+                "[concat(variables('storageAccountName'), '-', parameters('utcValue'))]"
             ]
         },
         {
@@ -471,7 +441,7 @@
                         "value": "StorageBlobDataContributor"
                     },
                     "resourceName": {
-                        "value": "[variables('flexStorageAccountName')]"
+                        "value": "[variables('storageAccountName')]"
                     }
                 }
             },
@@ -519,10 +489,6 @@
         "StorageAccountName": {
             "type": "string",
             "value": "[variables('storageAccountName')]"
-        },
-        "FlexStorageAccountName": {
-            "type": "string",
-            "value": "[variables('flexStorageAccountName')]"
         }
     }
 }
