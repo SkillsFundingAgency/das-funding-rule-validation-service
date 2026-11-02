@@ -115,17 +115,19 @@
             }
         },
         "durableTaskSchedulerSkuName": {
-            "type": "string",
-            "defaultValue": "Consumption"
+            "type": "string"
         },
         "durableTaskSchedulerSkuCapacity": {
-            "type": "int",
-            "defaultValue": 1
+            "type": "int"
         },
         "durableTaskSchedulerIpAllowlist": {
-            "type": "array",
-            "defaultValue": [
-                "0.0.0.0/0"
+            "type": "array"
+        },
+        "durableTaskSchedulerPublicNetworkAccess": {
+            "type": "string",
+            "allowedValues": [
+                "Enabled",
+                "Disabled"
             ]
         }
     },
@@ -308,6 +310,9 @@
                     },
                     "schedulerIpAllowlist": {
                         "value": "[parameters('durableTaskSchedulerIpAllowlist')]"
+                    },
+                    "schedulerPublicNetworkAccess": {
+                        "value": "[parameters('durableTaskSchedulerPublicNetworkAccess')]"
                     }
                 }
             }
