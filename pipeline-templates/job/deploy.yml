@@ -5,7 +5,7 @@ parameters:
   OverrideBlockOnPossibleDataLoss:
 
 jobs:
-- deployment: Deploy
+- deployment: DeployFlexFunctionApp
   pool:
     name: DAS - Continuous Deployment Agents
   environment: ${{ parameters.Environment }}
@@ -30,7 +30,6 @@ jobs:
             IsMultiRepoCheckout: true
             TemplateSecrets:
               ConfigurationStorageConnectionString: $(ConfigurationStorageConnectionString)
-              SharedStorageAccountConnectionString: $(SharedStorageAccountConnectionString)
               WorkerAccessRestrictions: $(WorkerAccessRestrictions)
         - template: azure-pipelines-templates/deploy/step/generate-config.yml@das-platform-building-blocks
           parameters:
@@ -56,7 +55,7 @@ jobs:
             SharedSQLServerName: $(SharedSQLServerName)
             SqlServerResourceGroupName: $(SharedEnvResourceGroup)
             FailoverGroupName: $(SharedSQLServerFailoverGroupName)
-        - template: azure-pipelines-templates/deploy/step/function-deploy.yml@das-platform-building-blocks
+        - template: azure-pipelines-templates/deploy/step/function-deploy-flex.yml@das-platform-building-blocks
           parameters:
             ServiceConnection: ${{ parameters.ServiceConnection }}
             FunctionAppName: $(FunctionAppName)
