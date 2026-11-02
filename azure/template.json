@@ -87,9 +87,9 @@
         },
         "flexMaximumInstanceCount": {
             "type": "int",
-            "defaultValue": 50,
+            "defaultValue": 2,
             "metadata": {
-                "description": "Maximum on-demand instances per function scale group (1-1000)."
+                "description": "Maximum instance count for each individual function"
             }
         },
         "flexInstanceMemoryMB": {
@@ -98,9 +98,13 @@
         },
         "flexAlwaysReadyDurableInstances": {
             "type": "int",
-            "defaultValue": 0,
+            "defaultValue": 0
+        },
+        "flexServiceBusMaxConcurrentCalls": {
+            "type": "int",
+            "defaultValue": 16,
             "metadata": {
-                "description": "Always-ready instances per scale group. Default is 0, so the app cold-starts with no idle cost"
+                "description": "Maximum message count each instance processes concurrently"
             }
         },
         "flexTriggersEnabled": {
@@ -339,6 +343,10 @@
                                 {
                                     "name": "ConnectionStrings__TableStorageConnectionString",
                                     "value": "[reference(concat(variables('storageAccountName'), '-', parameters('utcValue'))).outputs.storageConnectionString.value]"
+                                },
+                                {
+                                    "name": "AzureFunctionsJobHost__extensions__serviceBus__maxConcurrentCalls",
+                                    "value": "[string(parameters('flexServiceBusMaxConcurrentCalls'))]"
                                 },
                                 {
                                     "name": "AzureWebJobs.FundingRuleServiceBusTrigger.Disabled",
